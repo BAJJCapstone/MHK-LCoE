@@ -1,0 +1,10 @@
+*.json
+*.pkl
+*.html
+*.log
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+currentData/
+maps_files/
