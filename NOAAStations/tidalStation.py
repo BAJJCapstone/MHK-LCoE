@@ -21,8 +21,8 @@ class TidalStation(Station):
         with urllib.request.urlopen(station_url) as url:
             station_html = url.read()
 
-        soup = BeautifulSoup(station_html, "html.parser")
-        table = soup.find_all('tr') #find the table of available data
+        station_soup = BeautifulSoup(station_html, "html.parser")
+        table = station_soup.find_all('tr') #find the table of available data
         got_latitude = False
         got_longitude = False
         try:
@@ -36,8 +36,8 @@ class TidalStation(Station):
                     got_longitude = True
                 if got_longitude and got_latitude:
                     break
-                else:
-                    raise
+            else:
+                raise
         except:
             print('STATION DATA RETRIEVAL FAILURE')
             return
@@ -45,4 +45,28 @@ class TidalStation(Station):
         self.latitude = self.convertLatLon(latitude)
         self.longitude = self.convertLatLon(longitude)
 
-    def getAvailableData(self):
+    def getHarmonicConstituents(self, timezone = 'local', units = 'meters'):
+
+        harmonicConstituentDict = {}
+        if timezone == 'local': timezone_option = 1
+        elif timezone == 'GMT': timezone_option = 0
+        else: raise ValueError('Timezone must be local or GMT')
+
+        if units == 'meters': unit_option = 0
+        elif units == 'feet': unit_option = 1
+        else: raise ValueError('Units must be meters or feet')
+
+        HM_url = 'https://tidesandcurrents.noaa.gov/harcon.html?unit={}&timezone={}&id={}'.format(unit_option, timezone_option, self.ID)
+        with urllib.request.urlopen(HM_url) as url:
+            HM_html = url.read()
+
+        HM_soup = BeautifulSoup(HM_html, "html.parser")
+        table_headers = [header.get_text() for header in HM_soup.find_all('th')]
+        harmonicConstituents = HM_soup.find_all('tr')#find the table of available constituents
+        for constituent in harmonicConstituents[1:]:
+            rowData = [td.get_text() for td in constituent.find_all('td')]
+            zippedData = list(zip(table_headers, rowData))
+            name = rowData[1]
+            harmonicConstituentDict[name] = {values[0]: values[1] for values in zippedData[2:]}
+
+        return harmonicConstituentDict
