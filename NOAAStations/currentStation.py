@@ -50,21 +50,25 @@ class CurrentStation(Station):
                     dataList = [[td.get_text().strip() for td in tr.findAll("td")] for tr in rows]
                     dataDict = {data[0]: data[1] for data in dataList}
                     deploymentDates = [dataDict['Deployment/Recovery Dates (UTC)'].split(' / ')]
+                    dateFormat = 'Mon DD,YYYY HH:MM'
                 elif all(title in multipleDeploymentTitles for title in header_titles):
                     rows = table.tbody.find_all('tr')
                     deploymentDates = [[td.get_text() for td in tr.findAll("td")] for tr in rows]
+                    dateFormat = 'YYYY/MM/DD HH:MM'
 
-        self.deploymentDates = deploymentDates
-        self.latitude = dataDict['Latitude']
-        self.longitude = dataDict['Longitude']
+        self.deploymentDates = self.convertDates(deploymentDates, dateFormat)
+        self.latitude = self.convertLatLon(dataDict['Latitude'])
+        self.longitude = self.convertLatLon(dataDict['Longitude'])
         self.sampleInterval = int(dataDict['Sample Interval'].split()[0])
 
-    def getAvailableData(self, date_list = None):
+    def getAvailableData(self, date_lists = None):
         '''
         Will go through list of lists that are assigned to station_id, requesting for data between the available dates
+        -- date_list: list of datetime objects to be retrieved
+        Defaults to None, will retrieve all available data from the station
         '''
-        if date_list == None:
-            date_list = self.deploymentDates
+        if date_lists == None:
+            date_lists = self.deploymentDates
 
         station_id = self.ID
 

@@ -67,6 +67,6 @@ class TidalStation(Station):
             rowData = [td.get_text() for td in constituent.find_all('td')]
             zippedData = list(zip(table_headers, rowData))
             name = rowData[1]
-            harmonicConstituentDict[name] = {values[0]: values[1] for values in zippedData[2:]}
+            harmonicConstituentDict[name] = {header: value for header, value in zippedData[2:]}
 
         return harmonicConstituentDict
