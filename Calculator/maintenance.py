@@ -1,25 +1,43 @@
-def maintenance()
-# Components of the machinery
+class Maintenance:
+    # Components of the machinery
+    def __init__(self, number_of_turbines):
+        #put all of the user inputs in here
+        costs = []
+        cost.append(self.blade())
+        cost.append(self.support_column())
+        cost.append(self.gear_box())
 
-  def blade() 
-  def support_column()
-  def gear_box()
-  def electricity_generator()
-  def shaft()
-  def brake()
-  def cable()
+        #...etc.
 
-  # turbine will be sum of above costs
-  turbine =
+        self.turbineCost = sum(cost)
 
 
-# Additional factors
+    def blade(self):
+        return
+    def support_column(self):
+        return
+    def gear_box(self):
+        return
+    def electricity_generator(self):
+        return
+    def shaft(self):
+        return
+    def brake(self):
+        return
+    def cable(self):
+        return
 
-  def labor()
-  def part_life()
-  def mechanical_loading()
-  def weather()
+    # turbine will be sum of above costs
 
-# Size
 
-  number_of_turbines =
+
+    # Additional factors
+
+    def labor(self):
+        return
+    def part_life(self):
+        return
+    def mechanical_loading(self):
+        return
+    def weather(self):
+        return
