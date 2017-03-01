@@ -70,3 +70,7 @@ class TidalStation(Station):
             harmonicConstituentDict[name] = {header: value for header, value in zippedData[2:]}
 
         return harmonicConstituentDict
+
+    def graphHarmonicConstituent(self):
+
+    def predictWaterLevels(self):

@@ -30,3 +30,5 @@ class Station:
                                 minute = int(split_date[4])))
                 else:
                     raise ValueError('Invalid Date Format Option')
+
+        return date_listoflists
