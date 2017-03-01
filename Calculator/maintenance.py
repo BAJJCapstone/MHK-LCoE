@@ -41,3 +41,6 @@ class Maintenance:
         return
     def weather(self):
         return
+
+if __name__ == '__main__':
+    cost = Maintenance()
