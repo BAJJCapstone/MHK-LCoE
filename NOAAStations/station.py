@@ -27,7 +27,7 @@ class Station:
                                 month = int(strptime(split_date[0],'%b').tm_mon),
                                 day = int(split_date[1]),
                                 hour = int(split_date[3]),
-                                minute = int(split_date[4])))
+                                minute = int(split_date[4]))
                 else:
                     raise ValueError('Invalid Date Format Option')
 

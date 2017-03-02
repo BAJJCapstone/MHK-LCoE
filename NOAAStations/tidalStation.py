@@ -1,23 +1,22 @@
-from station import Station
-
+from .station import Station
 from bs4 import BeautifulSoup
 import urllib.request
 import json
 import pandas as pd
-
 import re
 import time
 from time import strptime
 import datetime
-
-from retry_decorator import retry
-
+import numpy as np
+from .retry_decorator import retry
 import os.path
+import matplotlib
+from matplotlib import pyplot as plt
 
 class TidalStation(Station):
 
     def getStationInfo(self):
-        station_url = 'https://tidesandcurrents.noaa.gov/stationhome.html?id={}'.format(station_id)
+        station_url = 'https://tidesandcurrents.noaa.gov/stationhome.html?id={}'.format(self.ID)
         with urllib.request.urlopen(station_url) as url:
             station_html = url.read()
 
@@ -71,6 +70,23 @@ class TidalStation(Station):
 
         return harmonicConstituentDict
 
-    def graphHarmonicConstituent(self):
+    def graphHarmonicConstituent(self,time):
+        time, height = self.predictWaterLevels(time)
+        plt.plot(time, height)
+        plt.show()
 
-    def predictWaterLevels(self):
+    def predictWaterLevels(self, time):
+        if time < 7*24: increment = .1
+        else: increment = 1.
+        time = np.arange(0, time, increment) #one hour
+
+        height = np.zeros_like(time)
+        harmonicConstituentDict = self.getHarmonicConstituents()
+
+        for key, constituent in harmonicConstituentDict.items():
+            height += self.constituentCalculation(time, constituent)
+
+        return time, height
+
+    def constituentCalculation(self, time, constituent):
+        return float(constituent['Amplitude'])*np.cos(np.pi/180.*(float(constituent['Speed'])*time + float(constituent['Phase'])))

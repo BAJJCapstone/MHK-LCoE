@@ -1,4 +1,4 @@
-from station import Station
+from .station import Station
 
 from bs4 import BeautifulSoup
 import urllib.request
@@ -10,7 +10,7 @@ import time
 from time import strptime
 import datetime
 
-from retry_decorator import retry
+from .retry_decorator import retry
 
 import os.path
 
