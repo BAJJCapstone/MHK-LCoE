@@ -1,3 +1,5 @@
+import datetime
+
 class Maintenance:
     # Components of the machinery
     def __init__(self, number_of_turbines):
@@ -16,6 +18,7 @@ class Maintenance:
 
 
     def blade(self, blade_matl, number_of_blades):
+        self.downtime = datetime.timedelta(weeks = 1, days = 3) #options here are weeks, days, hours, minutes and some other stuff
         blade_matl = ""
         return blade_matl + number_of_blades
     def support_column(self):
