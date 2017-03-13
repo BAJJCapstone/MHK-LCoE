@@ -1,5 +1,85 @@
 import datetime
 
+class EmergencyMaintenance: #General model for an emergency maintenance
+    def __init__(self, minimal_rate, midlevel_rate, severe_rate,
+                minimal_cost, midlevel_cost, severe_cost, number, labor):
+
+        self.minimal_rate = minimal_rate
+        self.midlevel_rate = midlevel_rate
+        self.severe_rate = severe_rate
+
+        self.minimal_cost = minimal_cost
+        self.midlevel_cost = midlevel_cost
+        self.severe_cost = severe_cost
+
+        self.number = number
+        self.labor = labor
+
+        self.downtime = None
+        self.event_cost = None
+
+    def minimal(self):
+        self.downtime = downtime = datetime.timedelta(days = 3)
+        self.event_cost = self.number * self.minimal_cost + self.labor*downtime
+
+    def midlevel(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 1)
+        self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
+
+    def severe(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 2)
+        self.event_cost = self.number * self.severe_cost + self.labor*downtime
+
+
+class Blade(EmergencyMaintenance):
+
+        def minimal(self):
+            self.downtime = downtime = datetime.timedelta(days = 3)
+            self.event_cost = self.number * self.minimal_cost + self.labor*downtime
+
+        def midlevel(self):
+            self.downtime = downtime = datetime.timedelta(weeks = 1)
+            self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
+
+        def severe(self):
+            self.downtime = downtime = datetime.timedelta(weeks = 2)
+            self.event_cost = self.number * self.severe_cost + self.labor*downtime
+
+class SupportColumn(EmergencyMaintenance):
+
+    def minimal(self):
+        self.downtime = downtime = datetime.timedelta(days = 3)
+        self.event_cost = self.number * self.minimal_cost + self.labor*downtime
+
+    def midlevel(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 1)
+        self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
+
+    def severe(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 2)
+        self.event_cost = self.number * self.severe_cost + self.labor*downtime
+
+class GearBox(EmergencyMaintenance):
+
+    def minimal(self):
+        self.downtime = downtime = datetime.timedelta(days = 3)
+        self.event_cost = self.number * self.minimal_cost + self.labor*downtime
+
+    def midlevel(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 1)
+        self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
+
+    def severe(self):
+        self.downtime = downtime = datetime.timedelta(weeks = 2)
+        self.event_cost = self.number * self.severe_cost + self.labor*downtime
+
+
+
+
+
+
+
+
 class Maintenance:
     # Components of the machinery
     def __init__(self, number_of_turbines):
