@@ -33,20 +33,6 @@ class EmergencyMaintenance: #General model for an emergency maintenance
 
 class Blade(EmergencyMaintenance):
 
-        def minimal(self):
-            self.downtime = downtime = datetime.timedelta(days = 3)
-            self.event_cost = self.number * self.minimal_cost + self.labor*downtime
-
-        def midlevel(self):
-            self.downtime = downtime = datetime.timedelta(weeks = 1)
-            self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
-
-        def severe(self):
-            self.downtime = downtime = datetime.timedelta(weeks = 2)
-            self.event_cost = self.number * self.severe_cost + self.labor*downtime
-
-class SupportColumn(EmergencyMaintenance):
-
     def minimal(self):
         self.downtime = downtime = datetime.timedelta(days = 3)
         self.event_cost = self.number * self.minimal_cost + self.labor*downtime
@@ -58,6 +44,9 @@ class SupportColumn(EmergencyMaintenance):
     def severe(self):
         self.downtime = downtime = datetime.timedelta(weeks = 2)
         self.event_cost = self.number * self.severe_cost + self.labor*downtime
+
+class SupportColumn(EmergencyMaintenance):
+    pass
 
 class GearBox(EmergencyMaintenance):
 
