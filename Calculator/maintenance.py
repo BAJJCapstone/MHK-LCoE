@@ -1,5 +1,3 @@
-import datetime
-
 class Maintenance:
     # Components of the machinery
     def __init__(self, number_of_turbines):
@@ -17,9 +15,9 @@ class Maintenance:
         self.turbineCost = sum(costs)
 
 
-    def blade(self):
-        self.downtime = datetime.timedelta(weeks=1, days=3) #options here are weeks, days, minutes, hours, and some other stuff
-        return
+    def blade(self, blade_matl, number_of_blades):
+        blade_matl = ""
+        return blade_matl + number_of_blades
     def support_column(self):
         return
     def gear_box(self):
