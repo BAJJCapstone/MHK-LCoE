@@ -3,17 +3,20 @@ class Maintenance:
     def __init__(self, number_of_turbines):
         #put all of the user inputs in here
         costs = []
-        cost.append(self.blade())
-        cost.append(self.support_column())
-        cost.append(self.gear_box())
-
+        costs.append(self.blade())
+        costs.append(self.support_column())
+        costs.append(self.gear_box())
+        costs.append(self.electricity_generator())
+        costs.append(self.shaft())
+        costs.append(self.brake())
+        costs.append(self.cable())
         #...etc.
 
-        self.turbineCost = sum(cost)
+        self.turbineCost = sum(costs)
 
 
     def blade(self):
-        return
+        return 
     def support_column(self):
         return
     def gear_box(self):
