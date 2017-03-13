@@ -17,21 +17,20 @@ class Maintenance:
         self.turbineCost = sum(costs)
 
 
-    def blade(self, blade_matl, number_of_blades):
+    def blade(self, blade_cost, number_of_blades):
         self.downtime = datetime.timedelta(weeks = 1, days = 3) #options here are weeks, days, hours, minutes and some other stuff
-        blade_matl = ""
-        return blade_matl + number_of_blades
-    def support_column(self):
+        return blade_cost * number_of_blades
+    def support_column(self, column_cost, number_of_columns):
         return
-    def gear_box(self):
+    def gear_box(self, gear_box_cost, number_of_gear_boxes):
         return
-    def electricity_generator(self):
+    def electricity_generator(self, electricity_generator_cost, number_of_electricity_generators):
         return
-    def shaft(self):
+    def shaft(self, shaft_cost, number_of_shafts):
         return
-    def brake(self):
+    def brake(self, brake_cost, number_of_brakes):
         return
-    def cable(self):
+    def cable(self, cable_cost, number_of_cables):
         return
 
     # turbine will be sum of above costs
@@ -40,7 +39,7 @@ class Maintenance:
 
     # Additional factors
 
-    def labor(self):
+    def labor(self, labor_cost, number_of_laborers):
         return
     def part_life(self):
         return
@@ -51,3 +50,6 @@ class Maintenance:
 
 if __name__ == '__main__':
     cost = Maintenance()
+
+
+#Planned maintenance will be approx. 5% of total cost
