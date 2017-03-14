@@ -38,7 +38,11 @@ def MonteCarlo(*args):
     return maintenance_type, wait_time
 
 def lifetimeMonteCarlo(lifetime, graph = False, *args):
-
+    '''
+    lifetime: argument in number of years to run simulation
+    graph: boolean to graph results or not
+    *args: list of parts included in emergency maintenances
+    '''
     if graph:
         time = []
         emergency_maintenance_cost = []
