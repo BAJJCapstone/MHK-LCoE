@@ -37,6 +37,16 @@ def MonteCarlo(*args):
 
     return maintenance_type, wait_time
 
+def lifetimeMonteCarlo(lifetime, *args):
+    time = 0
+    emergency_maintenance_cost = 0
+    while time < lifetime:
+        maintenance_type, wait_time = MonteCarlo(args)
+        time += wait_time + maintenance_type.downtime
+        emergency_maintenance_cost += maintenance_type.event_cost
+
+    return emergency_maintenance_cost
+
 class PlannedMaintenance:
     def __init__(self, total_cost):
         self.cost = total_cost*.05
