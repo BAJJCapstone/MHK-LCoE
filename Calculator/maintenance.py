@@ -1,4 +1,39 @@
 import datetime
+import random
+import numpy as np
+
+def MonteCarlo(*args):
+    sum_rates = 0
+    events = []
+    for arg in args:
+        events.append(events[-1]+arg.minimal_rate)
+        events.append(events[-1]+arg.midlevel_rate)
+        events.append(events[-1]+arg.severe_rate)
+        sum_rates += arg.minimal_rate + arg.midlevel_rate + arg.severe_rate
+
+    wait_time = random.expovariate(sum_rates)
+    time += wait_time
+    choice = random.uniform(0, sum_rates)
+
+    for i, event in enumerate(events):
+        if choice > event:
+            break
+
+    severity_level = i % 3
+    maintenance_type = args[i//3]
+
+    if severity_level == 0:
+        maintenance_type.minimal()
+    elif severity_level == 1:
+        maintenance_type.midlevel()
+    else:
+        maintenance_type.severe()
+
+    return maintenance_type, wait_time
+
+class PlannedMaintenance:
+    def __init__(self, total_cost):
+        self.cost = total_cost*.05
 
 class EmergencyMaintenance: #General model for an emergency maintenance
     def __init__(self, minimal_rate, midlevel_rate, severe_rate,
@@ -63,12 +98,6 @@ class GearBox(EmergencyMaintenance):
         self.event_cost = self.number * self.severe_cost + self.labor*downtime
 
 
-
-
-
-
-
-
 class Maintenance:
     # Components of the machinery
     def __init__(self, number_of_turbines):
@@ -116,9 +145,5 @@ class Maintenance:
         return
     def weather(self):
         return
-
-if __name__ == '__main__':
-    cost = Maintenance()
-
 
 #Planned maintenance will be approx. 5% of total cost
