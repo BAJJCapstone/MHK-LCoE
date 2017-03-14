@@ -22,11 +22,11 @@ def MonteCarlo(*args):
     choice = random.uniform(0, sum_rates)
 
     for i, event in enumerate(events):
-        if choice > event:
+        if event > choice:
             break
 
     severity_level = i % 3
-    maintenance_type = args[i//3]
+    maintenance_type = args[i-1//3]
 
     if severity_level == 0:
         maintenance_type.minimal()
