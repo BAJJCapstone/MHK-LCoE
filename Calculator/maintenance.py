@@ -3,6 +3,12 @@ import random
 import numpy as np
 
 def MonteCarlo(*args):
+    '''
+    Accepts list of EmergencyMaintenance objects to determine the next event time and
+    event.
+    Returns the type of maintenance that is occuring and the amount of time until the
+    next EmergencyMaintenance event (in years).
+    '''
     sum_rates = 0
     events = []
     for arg in args:
@@ -37,7 +43,7 @@ class PlannedMaintenance:
 
 class EmergencyMaintenance: #General model for an emergency maintenance
     def __init__(self, minimal_rate, midlevel_rate, severe_rate,
-                minimal_cost, midlevel_cost, severe_cost, number, labor):
+                minimal_cost, midlevel_cost, severe_cost, number, labor, partname = None):
 
         self.minimal_rate = minimal_rate
         self.midlevel_rate = midlevel_rate
@@ -50,6 +56,7 @@ class EmergencyMaintenance: #General model for an emergency maintenance
         self.number = number
         self.labor = labor
 
+        self.partname = partname
         self.downtime = None
         self.event_cost = None
 
