@@ -135,6 +135,17 @@ class GearBox(EmergencyMaintenance):
         self.downtime = downtime = datetime.timedelta(weeks = 2)
         self.event_cost = self.number * self.severe_cost + self.labor*downtime
 
+class Brake(EmergencyMaintenance)
+    pass
+
+class ElectricityGenerator(EmergencyMaintenance)
+    pass
+
+class Shaft(EmergencyMaintenance)
+    pass
+
+class Cable(EmergencyMaintenance)
+    pass
 
 class Maintenance:
     # Components of the machinery
@@ -153,22 +164,22 @@ class Maintenance:
         self.turbineCost = sum(costs)
 
 
-    def blade(self, blade_cost, number_of_blades):
-        self.downtime = datetime.timedelta(weeks = 1, days = 3) #options here are weeks, days, hours, minutes and some other stuff
-        return blade_cost * number_of_blades
-    def support_column(self, column_cost, number_of_columns):
-        self.downtime = datetime.timedelta(weeks = 1, days = 3)
-        return column_cost * number_of_columns
-    def gear_box(self, gear_box_cost, number_of_gear_boxes):
-        return gear_box_cost * number_of_gear_boxes
-    def electricity_generator(self, electricity_generator_cost, number_of_electricity_generators):
-        return electricity_generator_cost * number_of_electricity_generators
-    def shaft(self, shaft_cost, number_of_shafts):
-        return shaft_cost * number_of_shafts
-    def brake(self, brake_cost, number_of_brakes):
-        return brake_cost * number_of_brakes
-    def cable(self, cable_cost, number_of_cables):
-        return cable_cost * number_of_cables
+    #def blade(self, blade_cost, number_of_blades):
+    #    self.downtime = datetime.timedelta(weeks = 1, days = 3) #options here are weeks, days, hours, minutes and some other stuff
+    #    return blade_cost * number_of_blades
+    #def support_column(self, column_cost, number_of_columns):
+    #    self.downtime = datetime.timedelta(weeks = 1, days = 3 )
+    #    return column_cost * number_of_columns
+    #def gear_box(self, gear_box_cost, number_of_gear_boxes):
+    #    return gear_box_cost * number_of_gear_boxes
+    #def electricity_generator(self, electricity_generator_cost, number_of_electricity_generators):
+    #    return electricity_generator_cost * number_of_electricity_generators
+    #def shaft(self, shaft_cost, number_of_shafts):
+    #    return shaft_cost * number_of_shafts
+    #def brake(self, brake_cost, number_of_brakes):
+    #    return brake_cost * number_of_brakes
+    #def cable(self, cable_cost, number_of_cables):
+    #    return cable_cost * number_of_cables
 
     # turbine will be sum of above costs
 
@@ -176,11 +187,11 @@ class Maintenance:
 
     # Additional factors
 
-    def labor(self, labor_cost, number_of_laborers):
-        return labor_cost * number_of_laborers
-    def part_life(self):
-        return
-    def mechanical_loading(self):
-        return
-    def weather(self):
-        return
+    #def labor(self, labor_cost, number_of_laborers):
+    #    return labor_cost * number_of_laborers
+    #def part_life(self):
+    #    return
+    #def mechanical_loading(self):
+    #    return
+    #def weather(self):
+    #    return
