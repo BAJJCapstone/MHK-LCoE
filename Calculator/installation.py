@@ -12,7 +12,7 @@ def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
     # power output will help to adaquately size the wire
     #minimum voltage drop, minimum power drop (<5%), safety
     #variable 'voltage': user input voltage in kV
-    #variable 'circut': user input single or double circut for cables
+    #variable 'circuit': user input single or double circuit for cables
     #variable 'terrain': user input for land based cable
     if distance <=   :
     elif distance >=   :
@@ -50,20 +50,28 @@ def sea_cable_cost(sea_distance):
             cc1 = sea_distance *    #range is (1.5 to 1.9M) #HVDC
         return cc1
 
-def land_cable_cost (land_distance, cable_type, voltage, circut, terrain):
+def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None):
     '''
     cable_type : overhead, underground
-    circut : single, double
+    circuit : single, double
     terrain : flat, farmland, suburban, urban, forested, hill
     '''
-    cc2 = 0                                          #cable cost 2
-    if cable_type == "overhead" and voltage <=765:   #765kV is the current maximum AC voltage in the US
-        cc2 = 3969.87 * voltage         #now you have your average cost/mile of HVAC cable
+    cc2 = 0
+    if cable_type.upper() == 'OVERHEAD':                                  #cable cost 2
+        if voltage <=765:   #765kV is the current maximum AC voltage in the US
+            cc2 = 3969.87 * voltage         #now you have your average cost/mile of HVAC cable
         #this average assumes aluminum reinforced cable, that is greater than 10 miles
-        if circut == "single":
-            pass                    #cost/mile for single circut
-        else circut == "double":
-            cc2 *= 1.6              #cost/mile for double circut cables
+            if circuit.upper() == "SINGLE":
+                pass                    #cost/mile for single circuit
+            elif circuit.upper() == "DOUBLE":
+                cc2 *= 1.6              #cost/mile for double circuit cables
+            else:
+                raise ValueError('Voltage under 765V needs circuit type')
+
+        else:
+            cc2 = 2880.73 * voltage     #cost/mile of HVDC aluminum overhead cable
+            if circuit not None:
+                raise ValueError('circuit cannot be specified for greater than 765V')
 
         if land_distance > 10:      #multipliers for cable distance
             pass                    #shorter the distance, more costly
@@ -72,50 +80,30 @@ def land_cable_cost (land_distance, cable_type, voltage, circut, terrain):
         else:
             cc2 *= 1.5
 
-        if terrain == "flat" or "farmland":     #terrain multiplier
+        if terrain.upper() == "FLAT" or "FARMLAND":     #terrain multiplier
             pass
-        elif terrain == "suburban":
+        elif terrain.upper() == "SUBURBAN":
             cc2 *= 1.27
-        elif terrain == "urban":
+        elif terrain.upper() == "URBAN":
             cc2 *= 1.59
-        elif terrain =="forested":
+        elif terrain.upper() =="FORESTED":
             cc2 *= 2.25
-        elif terrain == "hill":
+        elif terrain.upper() == "HILL":
             cc2 *= 1.4
 
-    elif cable_type == "overhead" and voltage > 765:
-            cc2 = 2880.73 * voltage     #cost/mile of HVDC aluminum overhead cable
-            if land_distance > 10:      #multipliers for cable distance
-                pass                    #shorter the distance, more costly
-            elif land_distance > 3:
-                cc2 *= 1.2
-            else:
-                cc2 *= 1.5
 
-            if terrain == "flat" or "farmland":     #terrain multiplier
-                pass
-            elif terrain == "suburban":
-                cc2 *= 1.27
-            elif terrain == "urban":
-                cc2 *= 1.59
-            elif terrain =="forested":
-                cc2 *= 2.25
-            elif terrain == "hill":
-                cc2 *= 1.4
-#this cost is based on calculations from 2014 (when paper was written)
-#need to account for 2% inflation every year
-
-    else cable_type == "underground":
-
-        if land_distance <=40:
-            #AC
-            cc2 =
-        if land_distance >40:
+    if cable_type.upper() == "UNDERGROUND":
+        if land_distance <=40:      #HVAC
+            cc2 *= 5.5 #multiplier
+        else land_distance >40:
             #DC
             cc2  = land_cable_distance *  #cost per mile of underground cable (copper)
     else:
-        raise
+        raise TypeError('Cable Type not valid')
 
+
+#this cost is based on calculations from 2014 (when paper was written)
+#need to account for 2% inflation every year
 
     return cc2
 
