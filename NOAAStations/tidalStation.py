@@ -43,7 +43,7 @@ class TidalStation(Station):
 
         self.latitude = self.convertLatLon(latitude)
         self.longitude = self.convertLatLon(longitude)
-
+        self.constituents = self.getHarmonicConstituents()
     def getHarmonicConstituents(self, timezone = 'local', units = 'meters'):
 
         harmonicConstituentDict = {}
@@ -84,12 +84,14 @@ class TidalStation(Station):
         harmonicConstituentDict = self.getHarmonicConstituents()
 
         for key, constituent in harmonicConstituentDict.items():
-            height += self.constituentCalculation(times, constituent)
+            height += self.constituentCalculation(times)
 
         return times, height
 
-    def constituentCalculation(self, time, constituent):
-        return float(constituent['Amplitude'])*np.cos(np.pi/180.*(float(constituent['Speed'])*time + float(constituent['Phase'])))
+    def constituentCalculation(self, time):
 
-    def velocityFromConstituent(self, time, constitutent, gravity, height):
-        return np.sqrt(gravity/height)*constituentCalculation(time, constitutent)
+        return float(self.constituents['Amplitude'])*np.cos(np.pi/180.*(float(self.constituents['Speed'])*time + float(self.constituents['Phase'])))
+
+    def velocityFromConstituent(self, time, gravity, height):
+
+        return np.sqrt(gravity/height)*constituentCalculation(time)
