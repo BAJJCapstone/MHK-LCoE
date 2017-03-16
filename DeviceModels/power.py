@@ -1,4 +1,6 @@
 from scipy.integrate import odeint
+import numpy as np
+
 
 class Turbine:
     def __init__( K, Q, B, M, g):
