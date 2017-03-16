@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Turbine:
-    def __init__( K, Q, B, M, g):
+    def __init__(self, K, Q, B, M, g):
         '''
         K: Upper asymptote set to the installed capacity kW
         Q: Depends on turbine design
@@ -18,12 +18,13 @@ class Turbine:
         self.g = g
 
     def richardsCurve(self, Velocity):
-        return self.K * (1+self.Q*exp(-1*self.B*(Velocity-self.M)))**(-1/self.g)
+        #print(Velocity)
+        return self.K * (1+self.Q*np.exp(-1*self.B*(Velocity-self.M)))**(-1/self.g)
 
-    def instantaneousPowerWithStation(self, time, TidalStation):
-        return richardsCurve(TidalStation.velocityFromConstituent(time))
+    def instantaneousPowerWithStation(self, P, time, TidalStation, gravity, height):
+        return self.richardsCurve(abs(TidalStation.velocityFromConstituent(time, gravity, height)))
 
-def calculate_power(TidalStation, Turbine, p_0, time_start, time_end):
+def calculate_power(TidalStation, Turbine, p_0, time_start, time_end, gravity, height):
     times = np.arange(time_start, time_end)
-    result = odeint(Turbine.instantaneousPowerWithStation, p_0, times, args=(TidalStation,))
+    result = odeint(Turbine.instantaneousPowerWithStation, p_0, times, args=(TidalStation, gravity, height))
     return result

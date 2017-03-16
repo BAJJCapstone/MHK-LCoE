@@ -44,6 +44,7 @@ class TidalStation(Station):
         self.latitude = self.convertLatLon(latitude)
         self.longitude = self.convertLatLon(longitude)
         self.constituents = self.getHarmonicConstituents()
+        
     def getHarmonicConstituents(self, timezone = 'local', units = 'meters'):
 
         harmonicConstituentDict = {}
@@ -70,28 +71,25 @@ class TidalStation(Station):
 
         return harmonicConstituentDict
 
-    def graphHarmonicConstituent(self,time):
-        time, height = self.predictWaterLevels(time)
+    def graphHarmonicConstituent(self,time_start, time_end):
+        time, height = self.predictWaterLevels(time_start, time_end)
         plt.plot(time, height)
         plt.show()
 
     def predictWaterLevels(self, time_start, time_end):
-        if time < 7*24: increment = .1
+        if time_end - time_start < 7*24: increment = .1
         else: increment = 1.
         times = np.arange(time_start, time_end, increment) #one hour
-
-        height = np.zeros_like(times)
-        harmonicConstituentDict = self.getHarmonicConstituents()
-
-        for key, constituent in harmonicConstituentDict.items():
-            height += self.constituentCalculation(times)
-
+        height = self.constituentCalculation(times)
         return times, height
 
     def constituentCalculation(self, time):
-
-        return float(self.constituents['Amplitude'])*np.cos(np.pi/180.*(float(self.constituents['Speed'])*time + float(self.constituents['Phase'])))
-
+        if type(time) is np.ndarray: height = np.zeros_like(time)
+        else: height = 0
+        for key, constituent in self.constituents.items():
+            height += float(constituent['Amplitude'])*np.cos(np.pi/180.*(float(constituent['Speed'])*time + float(constituent['Phase'])))
+        return height
+    
     def velocityFromConstituent(self, time, gravity, height):
 
-        return np.sqrt(gravity/height)*constituentCalculation(time)
+        return np.sqrt(gravity/height)*self.constituentCalculation(time)
