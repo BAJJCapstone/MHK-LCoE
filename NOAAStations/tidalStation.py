@@ -75,18 +75,21 @@ class TidalStation(Station):
         plt.plot(time, height)
         plt.show()
 
-    def predictWaterLevels(self, time):
+    def predictWaterLevels(self, time_start, time_end):
         if time < 7*24: increment = .1
         else: increment = 1.
-        time = np.arange(0, time, increment) #one hour
+        times = np.arange(time_start, time_end, increment) #one hour
 
-        height = np.zeros_like(time)
+        height = np.zeros_like(times)
         harmonicConstituentDict = self.getHarmonicConstituents()
 
         for key, constituent in harmonicConstituentDict.items():
-            height += self.constituentCalculation(time, constituent)
+            height += self.constituentCalculation(times, constituent)
 
-        return time, height
+        return times, height
 
     def constituentCalculation(self, time, constituent):
         return float(constituent['Amplitude'])*np.cos(np.pi/180.*(float(constituent['Speed'])*time + float(constituent['Phase'])))
+
+    def velocityFromConstituent(self, time, constitutent, gravity, height):
+        return np.sqrt(gravity/height)*constituentCalculation(time, constitutent)

@@ -26,7 +26,7 @@ def MonteCarlo(*args):
             break
 
     severity_level = i % 3
-    maintenance_type = args[i-1//3]
+    maintenance_type = args[i//3]
 
     if severity_level == 0:
         maintenance_type.minimal()
@@ -74,7 +74,7 @@ class PlannedMaintenance:
 
 class EmergencyMaintenance: #General model for an emergency maintenance
     def __init__(self, minimal_rate, midlevel_rate, severe_rate,
-                minimal_cost, midlevel_cost, severe_cost, number, labor, partname = None):
+                minimal_cost, midlevel_cost, severe_cost, number, labor, partname = None): #maybe this should be kwargs?
 
         self.minimal_rate = minimal_rate
         self.midlevel_rate = midlevel_rate
