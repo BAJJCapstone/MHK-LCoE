@@ -22,9 +22,9 @@ class Turbine:
         return self.K * (1+self.Q*np.exp(-1*self.B*(Velocity-self.M)))**(-1/self.g)
 
     def instantaneousPowerWithStation(self, P, time, TidalStation, gravity, height):
-        return self.richardsCurve(abs(TidalStation.velocityFromConstituent(time, gravity, height)))
+        return self.richardsCurve(abs(TidalStation.velocityFromConstituent(time/3600, gravity, height)))
 
 def calculate_power(TidalStation, Turbine, p_0, time_start, time_end, gravity, height):
     times = np.arange(time_start, time_end)
     result = odeint(Turbine.instantaneousPowerWithStation, p_0, times, args=(TidalStation, gravity, height))
-    return result
+    return result, times
