@@ -11,6 +11,11 @@ get_ipython().magic('matplotlib inline')
 from matplotlib import pyplot as plt
 
 
+# In[ ]:
+
+get_ipython().magic('pinfo Turbine')
+
+
 # In[2]:
 
 MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)

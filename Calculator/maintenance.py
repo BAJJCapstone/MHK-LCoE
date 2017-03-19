@@ -2,7 +2,7 @@ import datetime
 import random
 import numpy as np
 
-def MonteCarlo(*args):
+def monteCarlo(*args):
     '''
     Accepts list of EmergencyMaintenance objects to determine the next event time and
     event.
