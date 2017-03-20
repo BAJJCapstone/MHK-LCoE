@@ -2,24 +2,26 @@ import math #put 'math.' in front of all functions
 # numpys and pandas?
 import LatLon #latitude-longitude library
 
-#5 to 20 kW turbines offer the best potential right now
 
 def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
-    """what are the arguments going to be?
-    power output, lat, long, 2lat, 2long (for grid location), distance, material?,
-    fuel, others, min_voltage_drop, power_loss, survey?"""
-    # this function will just add up the cost of each individual function?
-    # power output will help to adaquately size the wire
+    """arguments distance, material, fuel, others, min_voltage_drop, power_loss, survey?"""
+    # this function will just add up the cost of each user input + function
     #minimum voltage drop, minimum power drop (<5%), safety
     #variable 'voltage': user input voltage in kV
     #variable 'circuit': user input single or double circuit for cables
     #variable 'terrain': user input for land based cable
-    if distance <=   :
-    elif distance >=   :
-    elif distance >=   :
+    if powergen <= #
+    if powergen > #
+    #these inputs will be based on power generation model
+    if turbine_type.upper() == ""
+
+    if turbine_type.upper() == ""
+
+    if turbine_type.upper() == ""
+#find numbers for different types of turbines, different sizes, different gear boxes
 
 
-
+#find installation time frame (mainly depends on permitting, labor costs associated with that)
 
 def convertLatLon(self, tude):
     multiplier = 1 if tude[-1] in ['N', 'E'] else -1
@@ -57,7 +59,7 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
     terrain : flat, farmland, suburban, urban, forested, hill
     '''
     cc2 = 0
-    if cable_type.upper() == 'OVERHEAD':                                  #cable cost 2
+    if cable_type.upper() == 'OVERHEAD':                  #cable cost 2
         if voltage <=765:   #765kV is the current maximum AC voltage in the US
             cc2 = 3969.87 * voltage         #now you have your average cost/mile of HVAC cable
         #this average assumes aluminum reinforced cable, that is greater than 10 miles
@@ -90,20 +92,21 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
             cc2 *= 2.25
         elif terrain.upper() == "HILL":
             cc2 *= 1.4
-
-
-    if cable_type.upper() == "UNDERGROUND":
-        if land_distance <=40:      #HVAC
-            cc2 *= 5.5 #multiplier
-        else land_distance >40:
-            #DC
-            cc2  = land_cable_distance *  #cost per mile of underground cable (copper)
     else:
         raise TypeError('Cable Type not valid')
 
-
+"""if cable_type.upper() == "UNDERGROUND":
+    if land_distance <=40:      #HVAC
+        cc2 *= 5.5 #multiplier
+    else land_distance >40:
+        #DC
+        cc2  = land_cable_distance *  #cost per mile of underground cable (copper)
+    else:
+        raise TypeError('Cable Type not valid')
+    """
 #this cost is based on calculations from 2014 (when paper was written)
 #need to account for 2% inflation every year
+#this cost DOES include for the installation of the cable
 
     return cc2
 
