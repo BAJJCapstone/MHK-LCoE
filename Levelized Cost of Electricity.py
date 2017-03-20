@@ -26,7 +26,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[4]:
+# In[7]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -56,6 +56,20 @@ emergency_events = [maintenance.EmergencyMaintenance(
 lifetime = 30.
 
 time, emergency_maintenance_cost = maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True)
+
+
+# ### Testing for the power output generation
+
+# In[8]:
+
+MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)
+Sagamore = TidalStation(8447173)
+results, times = calculate_power(Sagamore, MCT, 0, 0, 365*24*3600, 9.8, 3)
+
+plt.plot(times/(24*3600), results/1000)
+plt.xlim(0,365)
+plt.ylabel('Energy (MJ)')
+plt.xlabel('Time (day)')
 
 
 # In[ ]:

@@ -7,13 +7,13 @@ from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
 
 import numpy as np
-get_ipython().magic('matplotlib inline')
+get_ipython().magic(u'matplotlib inline')
 from matplotlib import pyplot as plt
 
 
 # In[ ]:
 
-get_ipython().magic('pinfo Turbine')
+get_ipython().magic(u'pinfo Turbine')
 
 
 # In[2]:

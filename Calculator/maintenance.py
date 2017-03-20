@@ -60,6 +60,8 @@ def lifetimeMonteCarlo(lifetime, emergency_list, graph = False):
             emergency_maintenance_cost.append(emergency_maintenance_cost[-1]+maintenance_type.event_cost)
 
         plt.plot(time, emergency_maintenance_cost)
+        plt.ylabel('Cost (US $)')
+        plt.xlabel('Time (years)')
         plt.show()
 
     else:
