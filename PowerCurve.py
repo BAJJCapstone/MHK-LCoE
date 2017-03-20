@@ -33,7 +33,7 @@ optimized_parameters
 x = np.linspace(0,4)
 y = richardsCurve(x, *optimized_parameters)
 
-get_ipython().magic('matplotlib inline')
+get_ipython().magic(u'matplotlib inline')
 from matplotlib import pyplot as plt
 
 plt.plot(x,y)

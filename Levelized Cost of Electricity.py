@@ -71,6 +71,36 @@ plt.xlim(0,365)
 plt.ylabel('Energy (MJ)')
 plt.xlabel('Time (day)')
 
+
+# ### Build power curve model
+
+# In[7]:
+
+def richardsCurve(Velocity,B,M,g):
+    return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
+
+import scipy.optimize
+import numpy as np
+
+velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4,10])
+power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200,1200])
+
+starting_guess = (0.1031, 18.2, 0.027)
+
+optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
+                                                                 xdata = velocities, 
+                                                                 ydata = power, 
+                                                                 p0 = starting_guess)
+x = np.linspace(0,4)
+y = richardsCurve(x, *optimized_parameters)
+
+get_ipython().magic(u'matplotlib inline')
+from matplotlib import pyplot as plt
+
+plt.plot(x,y)
+plt.ylabel('Power (kW)')
+plt.xlabel('Flow Speed (m/s)')
+
 def LevelizedCostofElectricity(station_id, 
                                grid_location,
                                lifetime, 
