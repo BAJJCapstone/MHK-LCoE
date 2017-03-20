@@ -60,13 +60,13 @@ time, emergency_maintenance_cost = maintenance.lifetimeMonteCarlo(lifetime, emer
 
 # ### Harmonic Constituents 
 
-# In[9]:
+# In[12]:
 
 import plotly.plotly as py
 import plotly.graph_objs as go
 
 test_station = TidalStation(8447191)
-time, height = test_station.predictWaterLevels(24*30)
+time, height = test_station.predictWaterLevels(0, 24*30)
 
 trace = go.Scatter(
     x = time/24,
