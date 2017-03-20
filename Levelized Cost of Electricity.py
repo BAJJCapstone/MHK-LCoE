@@ -1,15 +1,15 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
-from Calculator import installation, maintenance, operation
+from Calculator import maintenance, operation
 
 from ipywidgets import widgets, interact, fixed
 from IPython.display import display
-get_ipython().magic('matplotlib inline')
+get_ipython().magic(u'matplotlib inline')
 import seaborn as sbn
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,43 @@ import scipy.interpolate
 from contextlib import redirect_stdout
 figsize(12, 10)
 sbn.set_context("talk", font_scale=1)
+
+
+from collections import namedtuple
+
+
+# ### Testing for the maintenance monte carlo simulation
+
+# In[4]:
+
+Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
+
+emergency_maintenance = [
+    Maintenance_Rate('Blade', 0.042, 0.0273, 0.00007, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Others', 0.03, 0.0299, 0.00006, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Gear Box',0.2125, 0.0325, 0.0005, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Electricity Generator', 0.065, 0.0545, 0.0065, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Shaft', 0.002, 0.007, .001, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Brake', 0.0153, 0.0325, 0.0025, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Cable', 0.225, 0.09247, 0.000002, 1., 4., 10., 1., 40.),
+    Maintenance_Rate('Control system', 0.1, 0.1, 0.0001, 1., 4., 10., 1., 40.)
+]
+
+emergency_events = [maintenance.EmergencyMaintenance(
+            e.minimal_rate, 
+            e.midlevel_rate, 
+            e.severe_rate,
+            e.minimal_cost, 
+            e.midlevel_cost, 
+            e.severe_cost,
+            e.number, 
+            e.labor, 
+            e.partname)
+            for e in emergency_maintenance]
+
+lifetime = 30.
+
+time, emergency_maintenance_cost = maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True)
 
 
 # In[ ]:
@@ -105,7 +142,6 @@ from SALib.analyze.sobol import analyze as sa
 
 # In[ ]:
 
-from collections import namedtuple
 Parameter = namedtuple('Parameter', 'name nominal min max description units')
 Fixed = namedtuple('Parameter', 'name value description units')
 Maintenance = namedtuple('Parameter', 'name nominal min max description units')
