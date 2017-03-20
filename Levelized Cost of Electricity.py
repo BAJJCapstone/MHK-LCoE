@@ -74,7 +74,7 @@ plt.xlabel('Time (day)')
 
 # ### Build power curve model
 
-# In[7]:
+# In[8]:
 
 def richardsCurve(Velocity,B,M,g):
     return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
@@ -85,7 +85,7 @@ import numpy as np
 velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4,10])
 power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200,1200])
 
-starting_guess = (0.1031, 18.2, 0.027)
+starting_guess = (1, 1, 1)
 
 optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
                                                                  xdata = velocities, 
@@ -100,6 +100,9 @@ from matplotlib import pyplot as plt
 plt.plot(x,y)
 plt.ylabel('Power (kW)')
 plt.xlabel('Flow Speed (m/s)')
+
+
+# In[ ]:
 
 def LevelizedCostofElectricity(station_id, 
                                grid_location,
@@ -168,12 +171,22 @@ def LevelizedCostofElectricity(station_id,
     else:
         #PUT ALL THE DATA PROCESSING HERE
     
-    from SALib.sample import morris as ms
+    
+
+
+# In[ ]:
+
+from SALib.sample import morris as ms
 from SALib.analyze import morris as ma
 from SALib.plotting import morris as mp
 
 from SALib.sample.saltelli import sample as ss
-from SALib.analyze.sobol import analyze as saParameter = namedtuple('Parameter', 'name nominal min max description units')
+from SALib.analyze.sobol import analyze as sa
+
+
+# In[ ]:
+
+Parameter = namedtuple('Parameter', 'name nominal min max description units')
 Fixed = namedtuple('Parameter', 'name value description units')
 Maintenance = namedtuple('Parameter', 'name nominal min max description units')
 
@@ -201,5 +214,6 @@ salib_problem['names'] = [i.name for i in variables]
 salib_problem['bounds'] = [[i.min, i.max] for i in variables]
 salib_problem['groups'] = None
 salib_problem
+
 
 
