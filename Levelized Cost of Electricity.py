@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[4]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
@@ -26,7 +26,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[7]:
+# In[5]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -60,7 +60,7 @@ time, emergency_maintenance_cost = maintenance.lifetimeMonteCarlo(lifetime, emer
 
 # ### Testing for the power output generation
 
-# In[8]:
+# In[6]:
 
 MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)
 Sagamore = TidalStation(8447173)
@@ -70,9 +70,6 @@ plt.plot(times/(24*3600), results/1000)
 plt.xlim(0,365)
 plt.ylabel('Energy (MJ)')
 plt.xlabel('Time (day)')
-
-
-# In[ ]:
 
 def LevelizedCostofElectricity(station_id, 
                                grid_location,
@@ -141,22 +138,12 @@ def LevelizedCostofElectricity(station_id,
     else:
         #PUT ALL THE DATA PROCESSING HERE
     
-    
-
-
-# In[ ]:
-
-from SALib.sample import morris as ms
+    from SALib.sample import morris as ms
 from SALib.analyze import morris as ma
 from SALib.plotting import morris as mp
 
 from SALib.sample.saltelli import sample as ss
-from SALib.analyze.sobol import analyze as sa
-
-
-# In[ ]:
-
-Parameter = namedtuple('Parameter', 'name nominal min max description units')
+from SALib.analyze.sobol import analyze as saParameter = namedtuple('Parameter', 'name nominal min max description units')
 Fixed = namedtuple('Parameter', 'name value description units')
 Maintenance = namedtuple('Parameter', 'name nominal min max description units')
 
@@ -184,6 +171,5 @@ salib_problem['names'] = [i.name for i in variables]
 salib_problem['bounds'] = [[i.min, i.max] for i in variables]
 salib_problem['groups'] = None
 salib_problem
-
 
 
