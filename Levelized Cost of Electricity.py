@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[4]:
+# In[17]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
@@ -18,7 +18,8 @@ import scipy
 import scipy.interpolate
 from contextlib import redirect_stdout
 figsize(12, 10)
-sbn.set_context("talk", font_scale=1)
+sbn.set_context("paper", font_scale=1)
+sns.set_style("whitegrid")
 
 
 from collections import namedtuple
@@ -26,7 +27,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[5]:
+# In[26]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -55,12 +56,24 @@ emergency_events = [maintenance.EmergencyMaintenance(
 
 lifetime = 30.
 
-time, emergency_maintenance_cost = maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True)
+result_list = []
+for i in range(20):
+    result_list.append(maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True))
+
+
+# In[27]:
+
+for result in result_list:
+    time, cost = result
+    plt.plot(time, cost)
+plt.xlabel('Time (years)')
+plt.ylabel('Cost (US$)')
+plt.savefig('MonteCarlo.png', format='png', transparent=True, bbox_inches='tight')
 
 
 # ### Harmonic Constituents 
 
-# In[12]:
+# In[23]:
 
 import plotly.plotly as py
 import plotly.graph_objs as go
@@ -68,45 +81,49 @@ import plotly.graph_objs as go
 test_station = TidalStation(8447191)
 time, height = test_station.predictWaterLevels(0, 24*30)
 
-trace = go.Scatter(
-    x = time/24,
-    y = height,
-    mode = 'lines',
-    name = 'lines',
-    line = dict(color = 'rgb(52, 165, 218)')
-)
+plt.plot(time/24, height)
+plt.xlabel('Time (days)')
+plt.ylabel('Height (m)')
+plt.savefig('HarmonicConstituents.png', format='png', transparent=True, bbox_inches='tight')
+# trace = go.Scatter(
+#     x = time/24,
+#     y = height,
+#     mode = 'lines',
+#     name = 'lines',
+#     line = dict(color = 'rgb(52, 165, 218)')
+# )
 
-layout = go.Layout(
-    title = 'Water Level Height | Bournedale, Cape Cod Canal',
-    titlefont = dict(
-        size = 26,
-        color = 'rgb(131, 135, 135)'),
-    xaxis = dict(title = 'Time (Days)',
-        titlefont = dict(
-        size = 20,
-        color = 'rgb(131, 135, 135)'),
-        tickfont=dict(
-            size=16,
-            color='rgb(131, 135, 135)'
-        )),
-    yaxis = dict(title = 'Height from MLLW (Meters)',
-        titlefont = dict(
-        size = 20,
-        color = 'rgb(131, 135, 135)'),
-        tickfont=dict(
-            size=16,
-            color='rgb(131, 135, 135)'
-        )),
-    paper_bgcolor='transparent',
-    plot_bgcolor='transparent')
+# layout = go.Layout(
+#     title = 'Water Level Height | Bournedale, Cape Cod Canal',
+#     titlefont = dict(
+#         size = 26,
+#         color = 'rgb(131, 135, 135)'),
+#     xaxis = dict(title = 'Time (Days)',
+#         titlefont = dict(
+#         size = 20,
+#         color = 'rgb(131, 135, 135)'),
+#         tickfont=dict(
+#             size=16,
+#             color='rgb(131, 135, 135)'
+#         )),
+#     yaxis = dict(title = 'Height from MLLW (Meters)',
+#         titlefont = dict(
+#         size = 20,
+#         color = 'rgb(131, 135, 135)'),
+#         tickfont=dict(
+#             size=16,
+#             color='rgb(131, 135, 135)'
+#         )),
+#     paper_bgcolor='transparent',
+#     plot_bgcolor='transparent')
 
-fig = go.Figure(data = [trace], layout=layout)
-py.iplot(fig, filename='harmonicConstituent')
+# fig = go.Figure(data = [trace], layout=layout)
+# py.iplot(fig, filename='harmonicConstituent')
 
 
 # ### Testing for the power output generation
 
-# In[6]:
+# In[24]:
 
 MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)
 Sagamore = TidalStation(8447173)
@@ -116,11 +133,12 @@ plt.plot(times/(24*3600), results/1000)
 plt.xlim(0,365)
 plt.ylabel('Energy (MJ)')
 plt.xlabel('Time (day)')
+plt.savefig('PowerOutput.png', format='png', transparent=True, bbox_inches='tight')
 
 
 # ### Build power curve model
 
-# In[8]:
+# In[25]:
 
 def richardsCurve(Velocity,B,M,g):
     return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
@@ -146,6 +164,7 @@ from matplotlib import pyplot as plt
 plt.plot(x,y)
 plt.ylabel('Power (kW)')
 plt.xlabel('Flow Speed (m/s)')
+plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='tight')
 
 
 # In[ ]:

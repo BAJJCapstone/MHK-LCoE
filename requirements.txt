@@ -1,3 +1,7 @@
 pandas
 numpy
 beautifulsoup4
+matplotlib
+seaborn
+plotly
+jupyter
