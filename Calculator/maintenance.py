@@ -15,7 +15,7 @@ def monteCarlo(emergency_list):
     events = []
     first_loop = True
     for emergency in emergency_list:
-        if first_loop: 
+        if first_loop:
             events.append(float(emergency.minimal_rate))
             first_loop = False
         else:
@@ -43,7 +43,7 @@ def monteCarlo(emergency_list):
 
     return maintenance_type, wait_time
 
-def lifetimeMonteCarlo(lifetime, emergency_list, graph = False):
+def lifetimeMonteCarlo(lifetime, emergency_list, discount_rate = .05, graph = False):
     '''
     lifetime: argument in number of years to run simulation
     graph: boolean to graph results or not
@@ -57,7 +57,7 @@ def lifetimeMonteCarlo(lifetime, emergency_list, graph = False):
             current_time = time[-1] + wait_time + maintenance_type.downtime.total_seconds()/(24*3600*365.25)
             if current_time > lifetime: break
             time.append(current_time)
-            emergency_maintenance_cost.append(emergency_maintenance_cost[-1]+maintenance_type.event_cost)
+            emergency_maintenance_cost.append((emergency_maintenance_cost[-1]+maintenance_type.event_cost)/((1+discount_rate)**(current_time)))
 
         plt.plot(time, emergency_maintenance_cost)
         plt.ylabel('Cost (US $)')
@@ -77,12 +77,30 @@ def lifetimeMonteCarlo(lifetime, emergency_list, graph = False):
     return time, emergency_maintenance_cost
 
 class PlannedMaintenance:
+    '''
+    total_cost : this will just take a chunk of the total capital cost and apply it the the planned maintenance by industry conventions
+    '''
     def __init__(self, total_cost):
         self.cost = total_cost*.05
 
 class EmergencyMaintenance: #General model for an emergency maintenance
+    '''
+    General Maintenance class
+    minimal_rate: yearly rate of failure
+    midlevel_rate: yearly rate of failure
+    severe_rate: yearly rate of failure
+    minimal_cost: US$ capital associated with minimal failure
+    midlevel_cost: US$ capital associated with midlevel failure
+    severe_cost: US$ capital associated with severe failure
+    number: how many need to be replaced
+    labor: cost of labor/hr
+    minimal_dt: downtime in days for minimal event
+    midlevel_dt: downtime in days for midlevel event
+    severe_dt: downtime in days for severe event
+    '''
     def __init__(self, minimal_rate, midlevel_rate, severe_rate,
-                minimal_cost, midlevel_cost, severe_cost, number, labor, partname = None): #maybe this should be kwargs?
+                minimal_cost, midlevel_cost, severe_cost, number=1 , labor=40,
+                minimal_dt = 3, midlevel_dt = 7, severe_dt = 14, partname = None): #maybe this should be kwargs?
 
         self.minimal_rate = minimal_rate
         self.midlevel_rate = midlevel_rate
@@ -100,106 +118,13 @@ class EmergencyMaintenance: #General model for an emergency maintenance
         self.event_cost = None
 
     def minimal(self):
-        self.downtime = downtime = datetime.timedelta(days = 3)
+        self.downtime = downtime = datetime.timedelta(days = minimal_dt)
         self.event_cost = self.number * self.minimal_cost + self.labor*downtime.total_seconds()/3600
 
     def midlevel(self):
-        self.downtime = downtime = datetime.timedelta(weeks = 1)
+        self.downtime = downtime = datetime.timedelta(days = midlevel_dt)
         self.event_cost = self.number * self.midlevel_cost + self.labor*downtime.total_seconds()/3600
 
     def severe(self):
-        self.downtime = downtime = datetime.timedelta(weeks = 2)
+        self.downtime = downtime = datetime.timedelta(days = severe_dt)
         self.event_cost = self.number * self.severe_cost + self.labor*downtime.total_seconds()/3600
-
-#
-# class Blade(EmergencyMaintenance):
-# 
-#     def minimal(self):
-#         self.downtime = downtime = datetime.timedelta(days = 3)
-#         self.event_cost = self.number * self.minimal_cost + self.labor*downtime
-#
-#     def midlevel(self):
-#         self.downtime = downtime = datetime.timedelta(weeks = 1)
-#         self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
-#
-#     def severe(self):
-#         self.downtime = downtime = datetime.timedelta(weeks = 2)
-#         self.event_cost = self.number * self.severe_cost + self.labor*downtime
-#
-# class SupportColumn(EmergencyMaintenance):
-#     pass
-#
-# class GearBox(EmergencyMaintenance):
-#
-#     def minimal(self):
-#         self.downtime = downtime = datetime.timedelta(days = 3)
-#         self.event_cost = self.number * self.minimal_cost + self.labor*downtime
-#
-#     def midlevel(self):
-#         self.downtime = downtime = datetime.timedelta(weeks = 1)
-#         self.event_cost = self.number * self.midlevel_cost + self.labor*downtime
-#
-#     def severe(self):
-#         self.downtime = downtime = datetime.timedelta(weeks = 2)
-#         self.event_cost = self.number * self.severe_cost + self.labor*downtime
-#
-# class Brake(EmergencyMaintenance)
-#     pass
-#
-# class ElectricityGenerator(EmergencyMaintenance)
-#     pass
-#
-# class Shaft(EmergencyMaintenance)
-#     pass
-#
-# class Cable(EmergencyMaintenance)
-#     pass
-#
-# class Maintenance:
-#     # Components of the machinery
-#     def __init__(self, number_of_turbines):
-#         #put all of the user inputs in here
-#         costs = []
-#         costs.append(self.blade())
-#         costs.append(self.support_column())
-#         costs.append(self.gear_box())
-#         costs.append(self.electricity_generator())
-#         costs.append(self.shaft())
-#         costs.append(self.brake())
-#         costs.append(self.cable())
-#         #...etc.
-#
-#         self.turbineCost = sum(costs)
-
-
-    #def blade(self, blade_cost, number_of_blades):
-    #    self.downtime = datetime.timedelta(weeks = 1, days = 3) #options here are weeks, days, hours, minutes and some other stuff
-    #    return blade_cost * number_of_blades
-    #def support_column(self, column_cost, number_of_columns):
-    #    self.downtime = datetime.timedelta(weeks = 1, days = 3 )
-    #    return column_cost * number_of_columns
-    #def gear_box(self, gear_box_cost, number_of_gear_boxes):
-    #    return gear_box_cost * number_of_gear_boxes
-    #def electricity_generator(self, electricity_generator_cost, number_of_electricity_generators):
-    #    return electricity_generator_cost * number_of_electricity_generators
-    #def shaft(self, shaft_cost, number_of_shafts):
-    #    return shaft_cost * number_of_shafts
-    #def brake(self, brake_cost, number_of_brakes):
-    #    return brake_cost * number_of_brakes
-    #def cable(self, cable_cost, number_of_cables):
-    #    return cable_cost * number_of_cables
-
-    # turbine will be sum of above costs
-
-
-
-    # Additional factors
-
-    #def labor(self, labor_cost, number_of_laborers):
-    #    return labor_cost * number_of_laborers
-    #def part_life(self):
-    #    return
-    #def mechanical_loading(self):
-    #    return
-    #def weather(self):
-    #    return

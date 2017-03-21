@@ -16,6 +16,11 @@ from matplotlib import pyplot as plt
 class TidalStation(Station):
 
     def getStationInfo(self):
+        '''
+        this function will run when TidalStation class is called, to save several
+        properties of the station specified
+        ~Requires internet connection~
+        '''
         station_url = 'https://tidesandcurrents.noaa.gov/stationhome.html?id={}'.format(self.ID)
         with urllib.request.urlopen(station_url) as url:
             station_html = url.read()
@@ -44,9 +49,11 @@ class TidalStation(Station):
         self.latitude = self.convertLatLon(latitude)
         self.longitude = self.convertLatLon(longitude)
         self.constituents = self.getHarmonicConstituents()
-        
-    def getHarmonicConstituents(self, timezone = 'local', units = 'meters'):
 
+    def getHarmonicConstituents(self, timezone = 'local', units = 'meters'):
+        '''
+        This function will scrape the harmonic constituents from the NOAA website
+        '''
         harmonicConstituentDict = {}
         if timezone == 'local': timezone_option = 1
         elif timezone == 'GMT': timezone_option = 0
@@ -72,11 +79,17 @@ class TidalStation(Station):
         return harmonicConstituentDict
 
     def graphHarmonicConstituent(self,time_start, time_end):
+        '''
+        makes the nifty graph from the harmonic constituents
+        '''
         time, height = self.predictWaterLevels(time_start, time_end)
         plt.plot(time, height)
         plt.show()
 
     def predictWaterLevels(self, time_start, time_end):
+        '''
+        will build time array from requested times and return array to user
+        '''
         if time_end - time_start < 7*24: increment = .1
         else: increment = 1.
         times = np.arange(time_start, time_end, increment) #one hour
@@ -84,12 +97,19 @@ class TidalStation(Station):
         return times, height
 
     def constituentCalculation(self, time):
+        '''
+        time: float or np.array
+        will calculate the height of the tide, and return an array or float based on the
+        time input
+        '''
         if type(time) is np.ndarray: height = np.zeros_like(time)
-        else: height = 0
+        else: height = 0.
         for key, constituent in self.constituents.items():
             height += float(constituent['Amplitude'])*np.cos(np.pi/180.*(float(constituent['Speed'])*time + float(constituent['Phase'])))
         return height
-    
-    def velocityFromConstituent(self, time, gravity, height):
 
+    def velocityFromConstituent(self, time, gravity, height):
+        '''
+        This is a weird calculation that I don't trust yet
+        '''
         return np.sqrt(gravity/height)*self.constituentCalculation(time)
