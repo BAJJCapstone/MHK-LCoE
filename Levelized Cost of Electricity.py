@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[17]:
+# In[1]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
@@ -9,7 +9,7 @@ from Calculator import maintenance, operation
 
 from ipywidgets import widgets, interact, fixed
 from IPython.display import display
-get_ipython().magic(u'matplotlib inline')
+get_ipython().magic('matplotlib inline')
 import seaborn as sbn
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +19,7 @@ import scipy.interpolate
 from contextlib import redirect_stdout
 figsize(12, 10)
 sbn.set_context("paper", font_scale=1)
-sns.set_style("whitegrid")
+sbn.set_style("whitegrid")
 
 
 from collections import namedtuple
@@ -27,7 +27,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[26]:
+# In[2]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -61,7 +61,7 @@ for i in range(20):
     result_list.append(maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True))
 
 
-# In[27]:
+# In[3]:
 
 for result in result_list:
     time, cost = result
@@ -73,7 +73,7 @@ plt.savefig('MonteCarlo.png', format='png', transparent=True, bbox_inches='tight
 
 # ### Harmonic Constituents 
 
-# In[23]:
+# In[4]:
 
 import plotly.plotly as py
 import plotly.graph_objs as go
@@ -123,7 +123,7 @@ plt.savefig('HarmonicConstituents.png', format='png', transparent=True, bbox_inc
 
 # ### Testing for the power output generation
 
-# In[24]:
+# In[5]:
 
 MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)
 Sagamore = TidalStation(8447173)
@@ -138,7 +138,7 @@ plt.savefig('PowerOutput.png', format='png', transparent=True, bbox_inches='tigh
 
 # ### Build power curve model
 
-# In[25]:
+# In[6]:
 
 def richardsCurve(Velocity,B,M,g):
     return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
@@ -158,7 +158,7 @@ optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve,
 x = np.linspace(0,4)
 y = richardsCurve(x, *optimized_parameters)
 
-get_ipython().magic(u'matplotlib inline')
+get_ipython().magic('matplotlib inline')
 from matplotlib import pyplot as plt
 
 plt.plot(x,y)
@@ -171,19 +171,27 @@ plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='ti
 
 def LevelizedCostofElectricity(station_id, 
                                grid_location,
+                               cap_ex,
                                lifetime, 
                                K, Q, B, M, g,
                                h_0,
                                gravity,
-                               **emergency_maintentance):
+                               emergency_maintentance):
     
+    '''
+    This function will calculated the levelized cost of electricity given the parameters for maintenance, power generation, installation
+    and lifetime
+    station_id will determine the location due to the necessity to use harmonic constituents for the calculations
+    grid_location is where the connections will be made
+    cap_ex are the capital expenditures for the cost of the turbine and fixtures
+    this function was written with a sensitivity analysis in mind
+    '''
     
     MCT = Turbine(K, Q, B, M, g)
     
     tidal_station = TidalStation(station_id)
     
-    emergency_events = 
-                [maintenance.EmergencyMaintenance(
+    emergency_events = [maintenance.EmergencyMaintenance(
                 e['minimal_rate'], 
                 e['midlevel_rate'], 
                 e['severe_rate'],
@@ -200,6 +208,11 @@ def LevelizedCostofElectricity(station_id,
 
     #installation_cost = installation.calculateInstallation() 
         
+        
+    ###
+    # The following code is used to run the monte carlo simulation with feedback to the power generation functions
+    # where the downtime requires the turbine to no longer generate an output
+    ###
     time = []
     results = []
     end_loop = False
@@ -233,13 +246,17 @@ def LevelizedCostofElectricity(station_id,
         results.append(results_array)
         time.append(time_array)
         
-    else:
-        #PUT ALL THE DATA PROCESSING HERE
+    powerGen = np.concatenate(results)
+    times = np.concatenate(time)
     
     
+    # Process the final costs and return the levelized cost
+    total_cost = maintenance_costs[-1] + installation_cost
+    total_power = powerGen[-1]
+    return total_cost/total_power
 
 
-# In[ ]:
+# In[7]:
 
 from SALib.sample import morris as ms
 from SALib.analyze import morris as ma

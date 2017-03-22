@@ -18,10 +18,10 @@ def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
     if turbine_type.upper() == ""
 
     if turbine_type.upper() == ""
-#find numbers for different types of turbines, different sizes, different gear boxes
+    #find numbers for different types of turbines, different sizes, different gear boxes
 
 
-#find installation time frame (mainly depends on permitting, labor costs associated with that)
+    #find installation time frame (mainly depends on permitting, labor costs associated with that)
 
 def convertLatLon(self, tude):
     multiplier = 1 if tude[-1] in ['N', 'E'] else -1
@@ -29,6 +29,25 @@ def convertLatLon(self, tude):
     #this code is from Jason
 
 #need to convert lat and long to distance in miles for below
+def distance(point_one, point_two):
+    '''
+    point_one: tuple containing (lat, lon)
+    point_two: tuple containing (lat, lon)
+    '''
+    
+    R = 6.371e6
+    
+    phi_one = point_one[0] * np.pi/180.
+    phi_two = point_two[0] * np.pi/180.
+    
+    delta_phi = phi_two - phi_one
+    delta_lamb = (point_two[1] - point_one[1])*np.pi/180
+    
+    a = np.sin(delta_phi/2.) * np.sin(delta_phi/2) + np.cos(phi_one) * np.cos(phi_two) * np.sin(delta_lamb/2) * np.sin(delta_lamb/2)
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+    
+    return R*c
+
 
 def sea_distance(lat,shore_lat,long,shore_long):
     sq1 = (lat - shore_lat)**2
