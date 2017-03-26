@@ -1,11 +1,11 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
-from Calculator import maintenance, operation
+from Calculator import maintenance, operation, installation
 
 from ipywidgets import widgets, interact, fixed
 from IPython.display import display
@@ -27,7 +27,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[2]:
+# In[4]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -56,9 +56,59 @@ emergency_events = [maintenance.EmergencyMaintenance(
 
 lifetime = 30.
 
-result_list = []
-for i in range(20):
-    result_list.append(maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True))
+# result_list = []
+# for i in range(20):
+#     result_list.append(maintenance.lifetimeMonteCarlo(lifetime, emergency_events, graph = True))
+
+
+# ### Testing for installation costs
+
+# In[5]:
+
+CapitalInstallation = namedtuple('Parameter', 'name, timePerTurbine, costPerDay, numberOfTurbines, scalePerTurbine')
+
+
+number_of_turbines = 10
+Capital_Installations = [
+    CapitalInstallation('Pile Installation, Mobilize Vessel',
+                       111000, 4, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Transport',
+                       167000, 2, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Drive Piles',
+                       164000, .3, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Demobilize',
+                       ),
+    CapitalInstallation('Gunderboom Sound Barrier',
+                       ),
+    CapitalInstallation('Frame for Barrier',
+                       ),
+    CapitalInstallation('Mob/Demob Sound Barrier',
+                       ),
+    CapitalInstallation('Cables to device',
+                       ),
+    CapitalInstallation('Cable to pile',
+                       ),
+    CapitalInstallation('Cable Splicing',
+                       ),
+    CapitalInstallation('Cable - Demobilization', 
+                       ),
+    
+    
+    
+    
+]
+
+
+installations = [installation.CapitalInstallation(i.name, 
+                                                  i.timePerTurbine, 
+                                                  i.costPerDay, 
+                                                  i.numberOfTurbines, 
+                                                  i.scalePerTurbine)
+                                                  for i in Capital_Installations ]
+                 
+
+
+
 
 
 # In[3]:
@@ -256,7 +306,7 @@ def LevelizedCostofElectricity(station_id,
     return total_cost/total_power
 
 
-# In[7]:
+# In[1]:
 
 from SALib.sample import morris as ms
 from SALib.analyze import morris as ma

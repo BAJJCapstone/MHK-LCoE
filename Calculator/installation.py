@@ -1,27 +1,40 @@
 import math #put 'math.' in front of all functions
 # numpys and pandas?
-import LatLon #latitude-longitude library
+
+class CapitalInstallation:
+    def __init__(self, name, time, timePerTurbine, costPerDay, numberOfTurbines = 1, scalePerTurbine = False):
+        self.timePerTurbine = timePerTurbine
+        self.costPerDay = costPerDay
+        self.numberOfTurbines = numberOfTurbines
+        self.scalePerTurbine = scalePerTurbine
+        self.name = name
+
+        self.capEx = self.calculateInstallationCost()
+
+    def calculateInstallationCost():
+        if scalePerTurbine: return self.numberOfTurbines*self.timePerTurbine*self.costPerDay
+        else: return self.timePerTurbine*self.costPerDay
 
 
-def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
-    """arguments distance, material, fuel, others, min_voltage_drop, power_loss, survey?"""
-    # this function will just add up the cost of each user input + function
-    #minimum voltage drop, minimum power drop (<5%), safety
-    #variable 'voltage': user input voltage in kV
-    #variable 'circuit': user input single or double circuit for cables
-    #variable 'terrain': user input for land based cable
-    if powergen <= #
-    if powergen > #
-    #these inputs will be based on power generation model
-    if turbine_type.upper() == ""
-
-    if turbine_type.upper() == ""
-
-    if turbine_type.upper() == ""
-    #find numbers for different types of turbines, different sizes, different gear boxes
-
-
-    #find installation time frame (mainly depends on permitting, labor costs associated with that)
+# def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
+#     """arguments distance, material, fuel, others, min_voltage_drop, power_loss, survey?"""
+#     # this function will just add up the cost of each user input + function
+#     #minimum voltage drop, minimum power drop (<5%), safety
+#     #variable 'voltage': user input voltage in kV
+#     #variable 'circuit': user input single or double circuit for cables
+#     #variable 'terrain': user input for land based cable
+#     if powergen <= #
+#     if powergen > #
+#     #these inputs will be based on power generation model
+#     if turbine_type.upper() == ""
+#
+#     if turbine_type.upper() == ""
+#
+#     if turbine_type.upper() == ""
+#     #find numbers for different types of turbines, different sizes, different gear boxes
+#
+#
+#     #find installation time frame (mainly depends on permitting, labor costs associated with that)
 
 def convertLatLon(self, tude):
     multiplier = 1 if tude[-1] in ['N', 'E'] else -1
@@ -34,18 +47,18 @@ def distance(point_one, point_two):
     point_one: tuple containing (lat, lon)
     point_two: tuple containing (lat, lon)
     '''
-    
+
     R = 6.371e6
-    
+
     phi_one = point_one[0] * np.pi/180.
     phi_two = point_two[0] * np.pi/180.
-    
+
     delta_phi = phi_two - phi_one
     delta_lamb = (point_two[1] - point_one[1])*np.pi/180
-    
+
     a = np.sin(delta_phi/2.) * np.sin(delta_phi/2) + np.cos(phi_one) * np.cos(phi_two) * np.sin(delta_lamb/2) * np.sin(delta_lamb/2)
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-    
+
     return R*c
 
 
@@ -63,12 +76,12 @@ def land_distance (grid_lat,shore_lat,grid_long,shore_long):
     #this cable does not need to be made for submarine conditions
     return math.sqrt(sq3+sq4)
 
-def sea_cable_cost(sea_distance):
+def sea_cable_cost(sea_distance, multiplier, multiplier_2):
     cc1 = 0                         #cable cost 1, based on distance
         if sea_distance <= 50:
-            cc1 = sea_distance *    #range is (0.74-1.08M) #HVAC"""
+            cc1 = sea_distance * multiplier    #range is (0.74-1.08M) #HVAC"""
         elif sea_distance > 50:
-            cc1 = sea_distance *    #range is (1.5 to 1.9M) #HVDC
+            cc1 = sea_distance * multiplier_2    #range is (1.5 to 1.9M) #HVDC
         return cc1
 
 def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None):
@@ -82,9 +95,9 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
         if voltage <=765:   #765kV is the current maximum AC voltage in the US
             cc2 = 3969.87 * voltage         #now you have your average cost/mile of HVAC cable
         #this average assumes aluminum reinforced cable, that is greater than 10 miles
-            if circuit.upper() == "SINGLE":
+            if circuit.strip().upper() == "SINGLE":
                 pass                    #cost/mile for single circuit
-            elif circuit.upper() == "DOUBLE":
+            elif circuit.strip().upper() == "DOUBLE":
                 cc2 *= 1.6              #cost/mile for double circuit cables
             else:
                 raise ValueError('Voltage under 765V needs circuit type')
@@ -101,15 +114,15 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
         else:
             cc2 *= 1.5
 
-        if terrain.upper() == "FLAT" or "FARMLAND":     #terrain multiplier
+        if terrain.strip().upper() == "FLAT" or "FARMLAND":     #terrain multiplier
             pass
-        elif terrain.upper() == "SUBURBAN":
+        elif terrain.strip().upper() == "SUBURBAN":
             cc2 *= 1.27
-        elif terrain.upper() == "URBAN":
+        elif terrain.strip().upper() == "URBAN":
             cc2 *= 1.59
-        elif terrain.upper() =="FORESTED":
+        elif terrain.strip().upper() =="FORESTED":
             cc2 *= 2.25
-        elif terrain.upper() == "HILL":
+        elif terrain.strip().upper() == "HILL":
             cc2 *= 1.4
     else:
         raise TypeError('Cable Type not valid')
@@ -154,19 +167,20 @@ def sea_minVD (sea_distance, ): #think of arguments -  wire type
     return VD1
 
 
-def land_minVD (land_distance, ):
-    #most likely DC cable, copper or aluminum? choose one
+# def land_minVD (land_distance, ):
+#     #most likely DC cable, copper or aluminum? choose one
+#
+#
+#
+# def power_loss():
+#
 
 
-
-def power_loss():
-
-
-#need variables for equipment
-#turbine_cost = have user import a number
-#have user input number of turbines
-#have some set discount rate for buying in bulk
 
 
 if __name__ == '__main__':  #Set, don't change- here if I want to run the file script
+    #need variables for equipment
+    #turbine_cost = have user import a number
+    #have user input number of turbines
+    #have some set discount rate for buying in bulk
     installation_cost()
