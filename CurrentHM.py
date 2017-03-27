@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[8]:
+# In[1]:
 
 import scipy.optimize
 import numpy as np
@@ -17,7 +17,7 @@ sbn.set_context("paper", font_scale=1)
 sbn.set_style("whitegrid")
 
 
-# In[24]:
+# In[2]:
 
 station_data = os.path.join('currentData', 'COD0901.pkl')
 
@@ -26,48 +26,71 @@ currents.dropna()
 
 currents['COD0901.1.s'] = pd.to_numeric(currents['COD0901.1.s'])
 currents['COD0901.1.d'] = pd.to_numeric(currents['COD0901.1.d'])
-speedAndDirection = pd.DataFrame(currents['COD0901.1.s'].values*np.cos(currents['COD0901.1.d'].values*np.pi/180.), 
-             index=currents.index)
-
+speedAndDirection = pd.DataFrame(currents['COD0901.1.s'].values/100.*np.cos(currents['COD0901.1.d'].values*np.pi/180.), 
+                                 index=currents.index)
+                                 
 plt.figure()
 speedAndDirection.plot()
+plt.show()
 
 
-# In[2]:
+# In[16]:
 
-velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4,10])
-power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200,1200])
+def harmonicConstituentModel(time, *hm):
+    assert len(hm) % 3 == 0
+    velocity = 0 
+    for i in range(len(hm)//3):
+        velocity += hm[3*i]*np.sin(hm[3*i+1] * time + hm[3*i+2])
+    return velocity
 
+starting_guess = tuple(1 for i in range(111))
 
-# In[5]:
+velocities = speedAndDirection.as_matrix()
 
-def richardsCurve(Velocity, K, Q, B,M,g):
-    return K*(1+Q*np.exp(-1*B*(Velocity-M)))**(-1/g)
-
-starting_guess = (1000, 1, 1, 1, 1)
-
-optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
-                                                                 xdata = velocities, 
-                                                                 ydata = power, 
-                                                                 p0 = starting_guess)
-x = np.linspace(0,4)
-y = richardsCurve(x, *optimized_parameters)
-x1 = np.linspace(0,4)
-y1 = richardsCurve(x, *starting_guess)
-get_ipython().magic('matplotlib inline')
-from matplotlib import pyplot as plt
-
-plt.plot(x,y,label='optimized')
-plt.plot(x1, y1, label='starting')
-plt.ylabel('Power (kW)')
-plt.xlabel('Flow Speed (m/s)')
-plt.legend(loc='best')
-plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='tight')
+time = np.arange(0, len(velocities))*6/60
+data = np.column_stack((time, velocities[:,0]))
+data = data[~np.isnan(data).any(axis=1)]
 
 
-# In[6]:
+# optimized_parameters, covariance = scipy.optimize.curve_fit(harmonicConstituentModel, 
+#                                                                  xdata = data[:,0], 
+#                                                                  ydata = data[:,1], 
+#                                                                  p0 = starting_guess)
 
-print(optimized_parameters)
+# print(optimized_parameters)
+
+
+# In[38]:
+
+(np.sqrt(np.dot(data[:,1],data[:,1])) / len(velocities))
+
+
+# In[11]:
+
+import pytides
+
+
+# In[15]:
+
+from pytides.tide import Tide
+
+
+# In[26]:
+
+from datetime import datetime
+test, lsq = Tide.decompose(heights = data[:,1], t = data[:,0], t0 = datetime.now(), full_output = True)
+
+
+# In[36]:
+
+constituents = test.model['constituent']
+for i in range(len(constituents)):
+    test.model['constituent'][i]
+
+
+# In[33]:
+
+
 
 
 # In[ ]:
