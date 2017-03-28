@@ -4,6 +4,7 @@ import math #put 'math.' in front of all functions
 class CapitalInstallation:
     def __init__(self, name, time, timePerTurbine, costPerDay, numberOfTurbines = 1, scalePerTurbine = False):
         self.timePerTurbine = timePerTurbine
+        self.time = time
         self.costPerDay = costPerDay
         self.numberOfTurbines = numberOfTurbines
         self.scalePerTurbine = scalePerTurbine
@@ -11,10 +12,9 @@ class CapitalInstallation:
 
         self.capEx = self.calculateInstallationCost()
 
-    def calculateInstallationCost():
-        if scalePerTurbine: return self.numberOfTurbines*self.timePerTurbine*self.costPerDay
-        else: return self.timePerTurbine*self.costPerDay
-
+    def calculateInstallationCost(self):
+        if self.scalePerTurbine: return self.numberOfTurbines*self.timePerTurbine*self.costPerDay
+        else: return self.time*self.costPerDay
 
 # def installation_cost(sea_cable_cost, land_cable_cost, turbine, gearbox,  ):
 #     """arguments distance, material, fuel, others, min_voltage_drop, power_loss, survey?"""
@@ -77,12 +77,11 @@ def land_distance (grid_lat,shore_lat,grid_long,shore_long):
     return math.sqrt(sq3+sq4)
 
 def sea_cable_cost(sea_distance, multiplier, multiplier_2):
-    cc1 = 0                         #cable cost 1, based on distance
-        if sea_distance <= 50:
-            cc1 = sea_distance * multiplier    #range is (0.74-1.08M) #HVAC"""
-        elif sea_distance > 50:
-            cc1 = sea_distance * multiplier_2    #range is (1.5 to 1.9M) #HVDC
-        return cc1
+    if sea_distance <= 50:
+        cc1 = sea_distance * multiplier    #range is (0.74-1.08M) #HVAC"""
+    elif sea_distance > 50:
+        cc1 = sea_distance * multiplier_2    #range is (1.5 to 1.9M) #HVDC
+    return cc1
 
 def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None):
     '''
@@ -104,7 +103,7 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
 
         else:
             cc2 = 2880.73 * voltage     #cost/mile of HVDC aluminum overhead cable
-            if circuit not None:
+            if circuit != None:
                 raise ValueError('circuit cannot be specified for greater than 765V')
 
         if land_distance > 10:      #multipliers for cable distance
@@ -126,22 +125,19 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
             cc2 *= 1.4
     else:
         raise TypeError('Cable Type not valid')
-
-"""if cable_type.upper() == "UNDERGROUND":
-    if land_distance <=40:      #HVAC
-        cc2 *= 5.5 #multiplier
-    else land_distance >40:
-        #DC
-        cc2  = land_cable_distance *  #cost per mile of underground cable (copper)
-    else:
-        raise TypeError('Cable Type not valid')
-    """
-#this cost is based on calculations from 2014 (when paper was written)
-#need to account for 2% inflation every year
-#this cost DOES include for the installation of the cable
-
     return cc2
 
+    # if cable_type.upper() == "UNDERGROUND":
+    #     if land_distance <=40:      #HVAC
+    #         cc2 *= 5.5 #multiplier
+    #     else land_distance >40:
+    #         #DC
+    #         cc2  = land_cable_distance *  #cost per mile of underground cable (copper)
+    #     else:
+    #         raise TypeError('Cable Type not valid')
+    #this cost is based on calculations from 2014 (when paper was written)
+    #need to account for 2% inflation every year
+    #this cost DOES include for the installation of the cable
 
 
 
@@ -165,17 +161,6 @@ def sea_minVD (sea_distance, ): #think of arguments -  wire type
         current = 3
         VD1 = sea_distance * current * C * D * 0.67 #kilovolts
     return VD1
-
-
-# def land_minVD (land_distance, ):
-#     #most likely DC cable, copper or aluminum? choose one
-#
-#
-#
-# def power_loss():
-#
-
-
 
 
 if __name__ == '__main__':  #Set, don't change- here if I want to run the file script

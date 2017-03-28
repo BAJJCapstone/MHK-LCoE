@@ -57,7 +57,7 @@ def lifetimeMonteCarlo(lifetime, emergency_list, discount_rate = .05, graph = Fa
             current_time = time[-1] + wait_time + maintenance_type.downtime.total_seconds()/(24*3600*365.25)
             if current_time > lifetime: break
             time.append(current_time)
-            emergency_maintenance_cost.append((emergency_maintenance_cost[-1]+maintenance_type.event_cost)/((1+discount_rate)**(current_time)))
+            emergency_maintenance_cost.append((emergency_maintenance_cost[-1]+(maintenance_type.event_cost)/((1+discount_rate)**(current_time))))
 
         plt.plot(time, emergency_maintenance_cost)
         plt.ylabel('Cost (US $)')
@@ -83,7 +83,7 @@ class PlannedMaintenance:
     def __init__(self, total_cost):
         self.cost = total_cost*.05
 
-class EmergencyMaitenance:
+class EmergencyMaintenance:
     '''
     General Maintenance class
     minimal_rate: yearly rate of failure
@@ -98,31 +98,46 @@ class EmergencyMaitenance:
     midlevel_dt: downtime in days for midlevel event
     severe_dt: downtime in days for severe event
     '''
-    def __init__(self, minimal_rate, midlevel_rate, severe_rate,
-                minimal_cost, midlevel_cost, severe_cost, number=1 , labor=40,
-                minimal_dt = 3, midlevel_dt = 7, severe_dt = 14, partname = None):
+    def __init__(self, 
+                 minimal_rate, 
+                 midlevel_rate, 
+                 severe_rate,
+                 minimal_cost, 
+                 midlevel_cost, 
+                 severe_cost, 
+                 number=1 , 
+                 labor=40,
+                 minimal_dt = 3,
+                 midlevel_dt = 7, 
+                 severe_dt = 14, 
+                 partname = None):
         
+        self.minimal_rate = minimal_rate
+        self.midlevel_rate = midlevel_rate
+        self.severe_rate = severe_rate
         self.minimal_cost = minimal_cost
         self.midlevel_cost = midlevel_cost
         self.severe_cost = severe_cost
-
         self.number = number
         self.labor = labor
+        self.minimal_dt = minimal_dt
+        self.midlevel_dt = midlevel_dt
+        self.severe_dt = severe_dt
 
         self.partname = partname
         self.downtime = None
         self.event_cost = None
 
     def minimal(self):
-        self.downtime = downtime = datetime.timedelta(days = minimal_dt)
+        self.downtime = downtime = datetime.timedelta(days = int(self.minimal_dt))
         self.event_cost = self.number * self.minimal_cost + self.labor*downtime.total_seconds()/3600
 
     def midlevel(self):
-        self.downtime = downtime = datetime.timedelta(days = midlevel_dt)
+        self.downtime = downtime = datetime.timedelta(days = int(self.midlevel_dt))
         self.event_cost = self.number * self.midlevel_cost + self.labor*downtime.total_seconds()/3600
 
     def severe(self):
-        self.downtime = downtime = datetime.timedelta(days = severe_dt)
+        self.downtime = downtime = datetime.timedelta(days = int(self.severe_dt))
         self.event_cost = self.number * self.severe_cost + self.labor*downtime.total_seconds()/3600
 
 
