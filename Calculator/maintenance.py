@@ -83,7 +83,7 @@ class PlannedMaintenance:
     def __init__(self, total_cost):
         self.cost = total_cost*.05
 
-class EmergencyMaintenance: #General model for an emergency maintenance
+class EmergencyMaitenance:
     '''
     General Maintenance class
     minimal_rate: yearly rate of failure
@@ -100,11 +100,8 @@ class EmergencyMaintenance: #General model for an emergency maintenance
     '''
     def __init__(self, minimal_rate, midlevel_rate, severe_rate,
                 minimal_cost, midlevel_cost, severe_cost, number=1 , labor=40,
-                minimal_dt = 3, midlevel_dt = 7, severe_dt = 14, partname = None): #maybe this should be kwargs?
-
-class EmergencyMaitenance:
-    def __init__(self, minimal_rate, midlevel_rate, severe_rate):
-
+                minimal_dt = 3, midlevel_dt = 7, severe_dt = 14, partname = None):
+        
         self.minimal_cost = minimal_cost
         self.midlevel_cost = midlevel_cost
         self.severe_cost = severe_cost
