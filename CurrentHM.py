@@ -122,7 +122,11 @@ plt.figure()
 speedAndDirection.plot()
 plt.show()
 
+velocities = speedAndDirection.as_matrix()
 
+time = np.arange(0, len(velocities))*6/60
+data = np.column_stack((time, velocities[:,0]))
+data = data[~np.isnan(data).any(axis=1)]
 
 t = np.arange(0, 50, .1)
 optimized_parameters = []

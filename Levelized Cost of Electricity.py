@@ -1,13 +1,13 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[5]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
-from Calculator import maintenance, operation
+# from Calculator import maintenance, operation
 
-
+import pandas as pd
 import os
 from ipywidgets import widgets, interact, fixed
 from IPython.display import display
@@ -73,29 +73,56 @@ CapitalInstallation = namedtuple('Parameter', 'name, timePerTurbine, costPerDay,
 number_of_turbines = 10
 Capital_Installations = [
     CapitalInstallation('Pile Installation, Mobilize Vessel',
-                       111000, 4, 0, 1, number_of_turbines, False),
+                        0, 111000, 4, 0, 1, number_of_turbines, False),
     CapitalInstallation('Pile Installation, Transport',
-                       167000, 2, 0, 1, number_of_turbines, False),
+                        0, 167000, 2, 0, 1, number_of_turbines, False),
     CapitalInstallation('Pile Installation, Drive Piles',
-                       164000, .3, 0, 1, number_of_turbines, False),
+                        0, 164000, .3, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, transport home',
+                       0, 167000, 2, 0, 1, number_of_turbines, False),
     CapitalInstallation('Pile Installation, Demobilize',
-                       ),
+                        0, 110000, 3, 0, 1, number_of_turbines, False),
     CapitalInstallation('Gunderboom Sound Barrier',
-                       ),
+                        0, 4500000, 0, 0, 1, number_of_turbines, False),
     CapitalInstallation('Frame for Barrier',
-                       ),
+                        0, 50000, 0, 0, 1, number_of_turbines, False),
     CapitalInstallation('Mob/Demob Sound Barrier',
-                       ),
-    CapitalInstallation('Cables to device',
-                       ),
+                        0, 70000, 0, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable transport to site',
+                       0, 45000, 1, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cables install to device',
+                        0, 75000, .5, 0, 1, number_of_turbines, True),
     CapitalInstallation('Cable to pile',
-                       ),
+                        0, 75000, .5, 0, 1, number_of_turbines, False),
     CapitalInstallation('Cable Splicing',
-                       ),
+                        0, 75000, .5, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable Fairleading',
+                       0, 75000, 5, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable through HDD',
+                       0, 75000, 2, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable Burial',
+                       0, 75000, 4, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable Testing and Commissioning',
+                       0, 63000, 4, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Cable Transport Home',
+                       0, 45000, 1, 0, 1, number_of_turbines, False),
     CapitalInstallation('Cable - Demobilization', 
-                       ),
-    
-    
+                        0, 46000, 2, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Mobilize Vessel',
+                       0, 74000, 4, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Transport to site',
+                       0, 79000, 1, 0, 1, number_of_turbines, False),
+    CapitalInstallation('Device Installation, install',
+                       0, 106000, .5, 0, 1, number_of_turbines, True),
+    CapitalInstallation('Device Installation, Secure Cables',
+                       0, 106000, .5, 0, 1, number_of_turbines, True),
+    CapitalInstallation('Device Installation, Fairleading Cables',
+                       0, 106000, 2, 0, 1, number_of_turbines, True),
+    CapitalInstallation('Device Installation, Transport Home',
+                       0, 87000, 1, 0 , 1, number_of_turbines, False),
+    CapitalInstallation('FERC Filing Fee',
+                       0, 91000, 1, 0, 0, number_of_turbines, False),
+
     
     
 ]
@@ -173,12 +200,15 @@ plt.savefig('HarmonicConstituents.png', format='png', transparent=True, bbox_inc
 # py.iplot(fig, filename='harmonicConstituent')
 
 
-# In[1]:
+# In[14]:
 
 ###
 # back calculating harmonic constituents from current measurement values
 #
 ###
+
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 def harmonicConstituentModel(time, *hm):
     assert len(hm) % 3 == 0
@@ -198,11 +228,16 @@ currents['COD0903.1.d'] = pd.to_numeric(currents['COD0903.1.d'])
 speedAndDirection = pd.DataFrame(currents['COD0903.1.s'].values/100.*np.cos(currents['COD0903.1.d'].values*np.pi/180.), 
                                  index=currents.index)
                                  
-plt.figure()
-speedAndDirection.plot()
-plt.show()
+# plt.figure()
+# speedAndDirection.plot()
+# plt.show()
 
+velocities = speedAndDirection.as_matrix()
 
+time = np.arange(0, len(velocities))*6/60
+
+current_measurements = np.column_stack((time, velocities[:,0]))
+current_measurements = current_measurements[~np.isnan(current_measurements).any(axis=1)]
 
 t = np.arange(0, 50, .1)
 optimized_parameters = []
@@ -214,12 +249,54 @@ with open('HM-COD0903.txt','r') as myFile:
         optimized_parameters.append(float(phase))
         
 graph2 = harmonicConstituentModel(t, *optimized_parameters)
-plt.plot(data[:500,0], data[:500,1], label='Measured Currents')
-plt.plot(t, graph2, label='Least Squares Fit')
-plt.legend(loc='best')
-plt.xlabel('Time (hours)')
-plt.ylabel('Velocity (m/s)')
-plt.show()
+# plt.plot(data[:500,0], data[:500,1], label='Measured Currents')
+# plt.plot(t, graph2, label='Least Squares Fit')
+# plt.legend(loc='best')
+# plt.xlabel('Time (hours)')
+# plt.ylabel('Velocity (m/s)')
+# plt.savefig('TidalCurrentHM.png', format='png', transparent=True, bbox_inches='tight')
+
+trace = [go.Scatter(
+    x = t,
+    y = graph2,
+    mode = 'lines',
+    name = 'Least Squares Calculation',
+    line = dict(color = 'rgb(52, 165, 218)')
+    ),
+        go.Scatter(
+    x = current_measurements[:500,0],
+    y = current_measurements[:500,1],
+    mode = 'lines',
+    name = 'Measured Data',
+    line = dict(color = 'white')
+    )]
+
+layout = go.Layout(
+    title = 'Water Current Velocities | Bournedale, Cape Cod Canal',
+    titlefont = dict(
+        size = 26,
+        color = 'white'),
+    xaxis = dict(title = 'Time (hours)',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    yaxis = dict(title = 'Velocity (m/s)',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    paper_bgcolor='transparent',
+    plot_bgcolor='transparent')
+
+fig = go.Figure(data = trace, layout=layout)
+py.iplot(fig, filename='currentHarmonicConstituent')
 
 
 # ### Testing for the power output generation
@@ -239,7 +316,7 @@ plt.savefig('PowerOutput.png', format='png', transparent=True, bbox_inches='tigh
 
 # ### Build power curve model
 
-# In[6]:
+# In[19]:
 
 def richardsCurve(Velocity,B,M,g):
     return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
@@ -247,25 +324,72 @@ def richardsCurve(Velocity,B,M,g):
 import scipy.optimize
 import numpy as np
 
-velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4,10])
-power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200,1200])
+velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4])
+power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200])
 
 starting_guess = (1, 1, 1)
 
-optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
-                                                                 xdata = velocities, 
-                                                                 ydata = power, 
-                                                                 p0 = starting_guess)
-x = np.linspace(0,4)
-y = richardsCurve(x, *optimized_parameters)
+# optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
+#                                                                  xdata = velocities, 
+#                                                                  ydata = power, 
+#                                                                  p0 = starting_guess)
+# x = np.linspace(0,4)
+# y = richardsCurve(x, *optimized_parameters)
 
 get_ipython().magic('matplotlib inline')
 from matplotlib import pyplot as plt
 
-plt.plot(x,y)
-plt.ylabel('Power (kW)')
-plt.xlabel('Flow Speed (m/s)')
-plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='tight')
+# plt.plot(x,y)
+# plt.ylabel('Power (kW)')
+# plt.xlabel('Flow Speed (m/s)')
+# plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='tight')
+
+trace = [go.Scatter(
+    x = x,
+    y = y,
+    mode = 'lines',
+    name = 'Richards Curve Model',
+    line = dict(color = 'rgb(52, 165, 218)')
+    ),
+        go.Scatter(
+    x = velocities,
+    y = power,
+    name = 'SeaGen Performance',
+    mode = 'markers',
+    marker = dict(
+        size = 10,
+        color = 'white',
+        line = dict(
+            width = 2,
+        )))]
+
+
+layout = go.Layout(
+    title = 'Richards Curve | SeaGen',
+    titlefont = dict(
+        size = 26,
+        color = 'white'),
+    xaxis = dict(title = 'Power (kW)',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    yaxis = dict(title = 'Velocity (m/s)',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    paper_bgcolor='transparent',
+    plot_bgcolor='transparent')
+
+fig = go.Figure(data = trace, layout=layout)
+py.iplot(fig, filename='RichardsCurve')
 
 
 # In[ ]:
@@ -277,7 +401,8 @@ def LevelizedCostofElectricity(station_id,
                                K, Q, B, M, g,
                                h_0,
                                gravity,
-                               emergency_maintentance):
+                               emergency_maintentance,
+                               installation):
     
     '''
     This function will calculated the levelized cost of electricity given the parameters for maintenance, power generation, installation
