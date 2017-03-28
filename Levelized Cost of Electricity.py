@@ -1,11 +1,11 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[3]:
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
-from Calculator import maintenance, operation, installation
+from Calculator import maintenance, operation
 
 
 import os

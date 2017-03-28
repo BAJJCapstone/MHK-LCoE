@@ -102,9 +102,8 @@ class EmergencyMaintenance: #General model for an emergency maintenance
                 minimal_cost, midlevel_cost, severe_cost, number=1 , labor=40,
                 minimal_dt = 3, midlevel_dt = 7, severe_dt = 14, partname = None): #maybe this should be kwargs?
 
-        self.minimal_rate = minimal_rate
-        self.midlevel_rate = midlevel_rate
-        self.severe_rate = severe_rate
+class EmergencyMaitenance:
+    def __init__(self, minimal_rate, midlevel_rate, severe_rate):
 
         self.minimal_cost = minimal_cost
         self.midlevel_cost = midlevel_cost
@@ -128,3 +127,7 @@ class EmergencyMaintenance: #General model for an emergency maintenance
     def severe(self):
         self.downtime = downtime = datetime.timedelta(days = severe_dt)
         self.event_cost = self.number * self.severe_cost + self.labor*downtime.total_seconds()/3600
+
+
+if __name__ == '__main__':
+    cost = Maintenance()
