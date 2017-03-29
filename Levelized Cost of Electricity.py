@@ -29,7 +29,7 @@ from collections import namedtuple
 
 # ### Testing for the maintenance monte carlo simulation
 
-# In[16]:
+# In[17]:
 
 def harmonicConstituentModel(time, *hm):
     assert len(hm) % 3 == 0
@@ -108,7 +108,7 @@ def LevelizedCostofElectricity(HM,
         maintenance_times.append(time_tracker+uptime)
         time_tracker += uptime + maintenance_event.downtime.total_seconds()/(24*3600*365.25)
         try:
-            results.append(results_array+results[-1)[-1])
+            results.append(results_array+results[-1][-1])
         except IndexError:
             results.append(results_array)
         time.append(time_array)
@@ -131,7 +131,7 @@ def LevelizedCostofElectricity(HM,
     return total_cost/total_power
 
 
-# In[12]:
+# In[18]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 CapitalInstallation = namedtuple('Parameter', 'name costPerDay timePerTurbine time numberOfTurbines scalePerTurbine')
@@ -231,7 +231,7 @@ plt.ylabel('Velocity (m/s)')
 plt.savefig('TidalCurrentHM.png', format='png', transparent=True, bbox_inches='tight')
 
 
-# In[15]:
+# In[ ]:
 
 LCOE = LevelizedCostofElectricity(HM, number_of_turbines, lifetime, 1200., 0.1835, 3.55361367,  2.30706792,  1.05659521,
                            emergency_events, installations, ops)
