@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 import scipy.optimize
 import numpy as np
@@ -22,24 +22,24 @@ from DeviceModels import Turbine, calculate_power
 from Calculator import maintenance, operation
 
 
-# In[2]:
+# In[37]:
 
 station_data = os.path.join('currentData', 'COD0903.pkl')
 
 currents = pd.read_pickle(station_data)
 currents.dropna()
 
-currents['COD0903.1.s'] = pd.to_numeric(currents['COD0903.1.s'])
-currents['COD0903.1.d'] = pd.to_numeric(currents['COD0903.1.d'])
-speedAndDirection = pd.DataFrame(currents['COD0903.1.s'].values/100.*np.cos(currents['COD0903.1.d'].values*np.pi/180.), 
-                                 index=currents.index)
+currents['COD0903.7.s'] = pd.to_numeric(currents['COD0903.7.s'])
+currents['COD0903.7.d'] = pd.to_numeric(currents['COD0903.7.d'])
+# speedAndDirection = pd.DataFrame(currents['COD0903.7.s'].values/100.*np.cos(currents['COD0903.7.d'].values*np.pi/180.), 
+#                                  index=currents.index)
                                  
 plt.figure()
-speedAndDirection.plot()
+plt.plot(np.arange(0, len(currents['COD0903.7.d'])),np.cos(currents['COD0903.7.d']*np.pi/180), 'o')
 plt.show()
 
 
-# In[17]:
+# In[21]:
 
 Bournedale = TidalStation(8447191)
 time, height = Bournedale.predictWaterLevels(0, 24*30)
@@ -48,13 +48,13 @@ time, height = Bournedale.predictWaterLevels(0, 24*30)
 height_constituents = Bournedale.constituents
 
 
-# In[5]:
+# In[23]:
 
 def harmonicConstituentModel(time, *hm):
     assert len(hm) % 3 == 0
     velocity = 0 
     for i in range(len(hm)//3):
-        velocity += hm[3*i]*np.sin((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
+        velocity += hm[3*i]*np.cos((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
     return velocity
 
 
@@ -65,46 +65,47 @@ time = np.arange(0, len(velocities))*6/60
 data = np.column_stack((time, velocities[:,0]))
 data = data[~np.isnan(data).any(axis=1)]
 
-# upper_bounds = []
-# starting_guess = []
+upper_bounds = []
+starting_guess = []
 
-# for keys, dicts in height_constituents.items():
-#     starting_guess.append(float(dicts['Amplitude']))
-#     upper_bounds.append(np.inf)
-#     starting_guess.append(float(dicts['Speed']))
-#     upper_bounds.append(360)
-#     starting_guess.append(float(dicts['Phase']))
-#     upper_bounds.append(360)
+for keys, dicts in height_constituents.items():
+    starting_guess.append(float(dicts['Amplitude']))
+    upper_bounds.append(np.inf)
+    starting_guess.append(float(dicts['Speed']))
+    upper_bounds.append(360)
+    if float(dicts['Phase'])+180 < 360: starting_guess.append(float(dicts['Phase']) + 180)
+    else: starting_guess.append(float(dicts['Phase']) - 180)
+    upper_bounds.append(360)
 
-# lower_bounds = [0]*len(upper_bounds)    
-# param_bounds = (lower_bounds, upper_bounds)
-# starting_guess = tuple(starting_guess)
+lower_bounds = [0]*len(upper_bounds)    
+param_bounds = (lower_bounds, upper_bounds)
+starting_guess = tuple(starting_guess)
 
-# optimized_parameters, covariance = scipy.optimize.curve_fit(harmonicConstituentModel, 
-#                                                              xdata = data[:,0], 
-#                                                              ydata = data[:,1],
-#                                                              bounds = param_bounds,
-#                                                              p0 = starting_guess)
+optimized_parameters, covariance = scipy.optimize.curve_fit(harmonicConstituentModel, 
+                                                             xdata = data[:,0], 
+                                                             ydata = data[:,1],
+                                                             bounds = param_bounds,
+                                                             p0 = starting_guess)
 
         
-# print(optimized_parameters)
+print(optimized_parameters)
 
 
-# In[55]:
+# In[24]:
 
-with open('HM-COD0903.txt','w') as myFile:
+with open('HM-COD0903-7.txt','w') as myFile:
     for i in range(len(optimized_parameters)//3):
         myFile.write('{},{},{}\n'.format(optimized_parameters[3*i],optimized_parameters[3*i+1], optimized_parameters[3*i+2]))
     
 
 
-# In[6]:
+# In[25]:
 
 def harmonicConstituentModel(time, *hm):
     assert len(hm) % 3 == 0
     velocity = 0 
     for i in range(len(hm)//3):
-        velocity += hm[3*i]*np.sin((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
+        velocity += hm[3*i]*np.cos((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
     return velocity
 
 
@@ -130,7 +131,7 @@ data = data[~np.isnan(data).any(axis=1)]
 
 t = np.arange(0, 50, .1)
 optimized_parameters = []
-with open('HM-COD0903.txt','r') as myFile:
+with open('HM-COD0903-7.txt','r') as myFile:
     for line in myFile:
         amplitude, speed, phase  = line.split(',')
         optimized_parameters.append(float(amplitude))
@@ -144,16 +145,6 @@ plt.legend(loc='best')
 plt.xlabel('Time (hours)')
 plt.ylabel('Velocity (m/s)')
 plt.show()
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
 
 
 # In[ ]:

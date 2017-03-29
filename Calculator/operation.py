@@ -4,5 +4,6 @@ class OperationsCrew:
         self.size = size
         self.salaryPerIndividual = salaryPerIndividual
 
-    def calculateSalaries():
-        self.salaryPerIndividual*self.size
+        self.annualCost = self.calculateSalaries()
+    def calculateSalaries(self):
+        return self.salaryPerIndividual*self.size

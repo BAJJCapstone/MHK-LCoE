@@ -24,17 +24,27 @@ class Turbine:
         #print(Velocity)
         return self.K * (1+self.Q*np.exp(-1*self.B*(Velocity-self.M)))**(-1/self.g)
 
+    def instantaneousPower(self, P, time, HM):
+        return self.richardsCurve(abs(harmonicConstituentModel(time, *HM)))
+
     def instantaneousPowerWithStation(self, P, time, TidalStation, gravity, height):
         '''
         Calculates the power given the current velocity
-        
+
         '''
         return self.richardsCurve(abs(TidalStation.velocityFromConstituent(time/3600, gravity, height)))
 
-def calculate_power(TidalStation, Turbine, p_0, time_start, time_end, gravity, height):
+def harmonicConstituentModel(time, *hm):
+    assert len(hm) % 3 == 0
+    velocity = 0
+    for i in range(len(hm)//3):
+        velocity += hm[3*i]*np.sin((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
+    return velocity
+
+def calculate_power(HM, Turbine, p_0, time_start, time_end):
     '''
     Integrate the big equation to determine how much power has been generated
     '''
     times = np.arange(time_start, time_end)
-    result = odeint(Turbine.instantaneousPowerWithStation, p_0, times, args=(TidalStation, gravity, height))
+    result = odeint(Turbine.instantaneousPower, p_0, times, args=(HM,))
     return result, times
