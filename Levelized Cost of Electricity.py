@@ -87,51 +87,59 @@ def LevelizedCostofElectricity(HM,
     
     maintenance_costs = []
     maintenance_times = []
-    
+    each_maintenance = []
+    powerGen = []
     #time to run the simulation
-    while not end_loop:
-        maintenance_event, uptime = maintenance.monteCarlo(emergency_maintentance)
+    for i in range(number_of_turbines):
+        while not end_loop:
+            maintenance_event, uptime = maintenance.monteCarlo(emergency_maintentance)
+
+            if time_tracker + uptime > lifetime:
+                end_loop = True
+                uptime = lifetime - time_tracker
+
+            end_time = time_tracker + uptime
+            results_array , time_array = calculate_power(HM, 
+                                                         MCT, 
+                                                         0, 
+                                                         time_tracker*24*3600*365.25, 
+                                                         end_time*24*3600*365.25, 
+                                                         ) # everything else is in years, need to convert to seconds for int
+
+            maintenance_costs.append(maintenance_event.event_cost)
+            maintenance_times.append(time_tracker+uptime)
+            time_tracker += uptime + maintenance_event.downtime.total_seconds()/(24*3600*365.25)
+            try:
+                results.append(results_array+results[-1][-1])
+            except IndexError:
+                results.append(results_array)
+#             print('{} kJ'.format(results[-1][-1]))
+
+            time.append(time_array)
         
-        if time_tracker + uptime > lifetime:
-            end_loop = True
-            uptime = lifetime - time_tracker
-            
-        end_time = time_tracker + uptime
-        results_array , time_array = calculate_power(HM, 
-                                                     MCT, 
-                                                     0, 
-                                                     time_tracker*24*60*365.25, 
-                                                     end_time*24*60*365.25, 
-                                                     )
         
-        maintenance_costs.append(maintenance_event.event_cost)
-        maintenance_times.append(time_tracker+uptime)
-        time_tracker += uptime + maintenance_event.downtime.total_seconds()/(24*3600*365.25)
-        try:
-            results.append(results_array+results[-1][-1])
-        except IndexError:
-            results.append(results_array)
-        time.append(time_array)
+        power_tracking = np.concatenate(results)
+        powerGen.append(np.concatenate(results)[-1])
+        times = np.concatenate(time)
         
-    powerGen = np.concatenate(results)
-    times = np.concatenate(time)
+        each_maintenance.append(sum(maintenance_costs))
     
-#     plt.plot(times, powerGen)
-#     plt.show()
-#     plt.plot(maintenance_times, maintenance_costs)
-#     plt.show()
+    plt.plot(times/(24*3600*365.25), power_tracking)
+    plt.show()
+    plt.plot(maintenance_times, maintenance_costs)
+    plt.show()
     
     installation_cost = calculate_Installation(installation)
     ops_cost = calculate_ops(operations, lifetime)
     # Process the final costs and return the levelized cost
-    total_cost = sum(maintenance_costs) + installation_cost + ops_cost
+    total_cost = sum(each_maintenance) + installation_cost + ops_cost
     print(total_cost)
-    total_power = powerGen[-1]/lifetime/(365.25*24*60) #to kWhr!!
+    total_power = sum(powerGen)/lifetime/(365.25*24) #to kWhr!!
     print(total_power)
     return total_cost/total_power
 
 
-# In[18]:
+# In[20]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 CapitalInstallation = namedtuple('Parameter', 'name costPerDay timePerTurbine time numberOfTurbines scalePerTurbine')
@@ -140,8 +148,7 @@ CapitalInstallation = namedtuple('Parameter', 'name costPerDay timePerTurbine ti
 ## Heli Speed = 130-145
 ## 1014
 ## 31
-number_of_turbines = 1
-lifetime = 30.
+
 
 emergency_maintenance = [
     Maintenance_Rate('Blade', 0.042, 0.0273, 0.00007, 1014.*24.*1, 1014*24.*4, 3500*24.*5, 1., 3*40.),
@@ -154,40 +161,6 @@ emergency_maintenance = [
     Maintenance_Rate('Control system', 0.1, 0.1, 0.0001,1014.*24.*1, 1014*24.*4, 3500*24.*5, 1., 3*40.)
 ]
 
-Capital_Installations = [
-    CapitalInstallation('Pile Installation, Mobilize Vessel', 111000., 'n/a', 4, number_of_turbines, False),
-    CapitalInstallation('Pile Installation, Transport', 167000., 'n/a', 2, number_of_turbines, False),
-    CapitalInstallation('Pile Installation, Drive Piles', 164000., .3, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Pile Installation, transport home', 167000., 'n/a', 2, number_of_turbines, False),
-    CapitalInstallation('Pile Installation, Demobilize', 110000., 'n/a', 3, number_of_turbines, False),
-    CapitalInstallation('Gunderboom Sound Barrier', 4500000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Frame for Barrier',50000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Mob/Demob Sound Barrier', 70000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Cable transport to site',45000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Cables install to device',75000., .5, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Cable to pile',75000., .5, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Cable Splicing',75000., .5, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Cable Fairleading',75000., 'n/a', 5, number_of_turbines, False),
-    CapitalInstallation('Cable through HDD', 75000., 'n/a', 2, number_of_turbines, False),
-    CapitalInstallation('Cable Burial', 75000., 'n/a', 4, number_of_turbines, False),
-    CapitalInstallation('Cable Testing and Commissioning',63000., 'n/a', 4, number_of_turbines, False),
-    CapitalInstallation('Cable Transport Home', 45000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Cable - Demobilization', 46000., 'n/a', 2, number_of_turbines, False),
-    CapitalInstallation('Device Installation, Mobilize Vessel', 74000., 'n/a', 4, number_of_turbines, False),
-    CapitalInstallation('Device Installation, Transport to site', 79000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('Device Installation, install',  106000., .5, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Device Installation, Secure Cables', 106000., .5, 'n/a', number_of_turbines, True),
-    CapitalInstallation('Device Installation, Fairleading Cables',  106000., 'n/a', 2, number_of_turbines, False),
-    CapitalInstallation('Device Installation, Transport Home', 87000., 'n/a', 1, number_of_turbines, False),
-    CapitalInstallation('FERC Filing Fee', 91000., 'n/a', 1, number_of_turbines, False)]
-
-installations = [installation.CapitalInstallation(i.name, 
-                                                  i.time, 
-                                                  i.timePerTurbine, 
-                                                  i.costPerDay, 
-                                                  i.numberOfTurbines, 
-                                                  i.scalePerTurbine)
-                                                  for i in Capital_Installations ]
 
 emergency_events = [maintenance.EmergencyMaintenance(
             e.minimal_rate, 
@@ -221,21 +194,164 @@ HM = tuple(HM)
 # MCT = Turbine(1200., 0.1835, 3.55361367,  2.30706792,  1.05659521)
 # Sagamore = TidalStation(8447173)
 # results, times = calculate_power(Sagamore, MCT, 0, 0, 365*24*3600, 9.8, 3)
-t = np.arange(0, 50)
-graph2 = harmonicConstituentModel(t, *HM)
+# t = np.arange(0, 50)
+# graph2 = harmonicConstituentModel(t, *HM)
 
-plt.plot(t, graph2, label='Least Squares Fit')
-plt.legend(loc='best')
-plt.xlabel('Time (hours)')
-plt.ylabel('Velocity (m/s)')
-plt.savefig('TidalCurrentHM.png', format='png', transparent=True, bbox_inches='tight')
+# plt.plot(t, graph2, label='Least Squares Fit')
+# plt.legend(loc='best')
+# plt.xlabel('Time (hours)')
+# plt.ylabel('Velocity (m/s)')
+# plt.savefig('TidalCurrentHM.png', format='png', transparent=True, bbox_inches='tight')
 
 
-# In[ ]:
+# In[25]:
 
-LCOE = LevelizedCostofElectricity(HM, number_of_turbines, lifetime, 1200., 0.1835, 3.55361367,  2.30706792,  1.05659521,
-                           emergency_events, installations, ops)
-print(LCOE)
+lifetime = 30.
+LCOE = []
+for number_of_turbines in [1,2,5,10,50,100]:
+    Capital_Installations = [
+    CapitalInstallation('Pile Installation, Mobilize Vessel', 111000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Transport', 167000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Drive Piles', 164000., .3, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Pile Installation, transport home', 167000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Demobilize', 110000., 'n/a', 3, number_of_turbines, False),
+    CapitalInstallation('Gunderboom Sound Barrier', 4500000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Frame for Barrier',50000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Mob/Demob Sound Barrier', 70000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cable transport to site',45000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cables install to device',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable to pile',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable Splicing',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable Fairleading',75000., 'n/a', 5, number_of_turbines, False),
+    CapitalInstallation('Cable through HDD', 75000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Cable Burial', 75000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Cable Testing and Commissioning',63000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Cable Transport Home', 45000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cable - Demobilization', 46000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Mobilize Vessel', 74000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Transport to site', 79000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Device Installation, install',  106000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Device Installation, Secure Cables', 106000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Device Installation, Fairleading Cables',  106000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Transport Home', 87000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('FERC Filing Fee', 91000., 'n/a', 1, number_of_turbines, False)]
+
+    installations = [installation.CapitalInstallation(i.name, 
+                                                      i.time, 
+                                                      i.timePerTurbine, 
+                                                      i.costPerDay, 
+                                                      i.numberOfTurbines, 
+                                                      i.scalePerTurbine)
+                                                      for i in Capital_Installations ]
+
+    LCOE.append(LevelizedCostofElectricity(HM, number_of_turbines, lifetime, 1200., 0.1835, 3.55361367,  2.30706792,  1.05659521,
+                           emergency_events, installations, ops))
+print('1. SeaGen - {}'.format(LCOE))
+
+
+
+
+# In[51]:
+
+import plotly.plotly as py
+import plotly.graph_objs as go
+
+
+trace = go.Bar(
+    x = ['One','Two','Five','Ten','Fifty','One Hundred'],
+    y = LCOE,
+    marker = dict(color = 'rgb(52, 165, 218)')
+)
+
+layout = go.Layout(
+    xaxis = dict(title = 'Number of SeaGen Turbines',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    yaxis = dict(title = 'US $ / kWhr',
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+        annotations=[
+        dict(x=xi,y=yi,
+             text='${0:.2f}'.format(yi[0]),
+             font = dict(
+                 size = 16,
+                 color='white'),
+             xanchor='center',
+             yanchor='bottom',
+             showarrow=False,
+        ) for xi, yi in zip(['One','Two','Five','Ten','Fifty','One Hundred'], LCOE)],
+    paper_bgcolor='transparent',
+    plot_bgcolor='transparent')
+
+fig = go.Figure(data = [trace], layout=layout)
+py.iplot(fig, filename='lcoe')
+
+
+# In[27]:
+
+lifetime = 30.
+LCOE_gen4wave = []
+for number_of_turbines in [1,2,5,10,50,100]:
+    Capital_Installations = [
+    CapitalInstallation('Pile Installation, Mobilize Vessel', 111000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Transport', 167000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Drive Piles', 164000., .3, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Pile Installation, transport home', 167000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Pile Installation, Demobilize', 110000., 'n/a', 3, number_of_turbines, False),
+    CapitalInstallation('Gunderboom Sound Barrier', 4500000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Frame for Barrier',50000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Mob/Demob Sound Barrier', 70000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cable transport to site',45000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cables install to device',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable to pile',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable Splicing',75000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Cable Fairleading',75000., 'n/a', 5, number_of_turbines, False),
+    CapitalInstallation('Cable through HDD', 75000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Cable Burial', 75000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Cable Testing and Commissioning',63000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Cable Transport Home', 45000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Cable - Demobilization', 46000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Mobilize Vessel', 74000., 'n/a', 4, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Transport to site', 79000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('Device Installation, install',  106000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Device Installation, Secure Cables', 106000., .5, 'n/a', number_of_turbines, True),
+    CapitalInstallation('Device Installation, Fairleading Cables',  106000., 'n/a', 2, number_of_turbines, False),
+    CapitalInstallation('Device Installation, Transport Home', 87000., 'n/a', 1, number_of_turbines, False),
+    CapitalInstallation('FERC Filing Fee', 91000., 'n/a', 1, number_of_turbines, False)]
+
+    installations = [installation.CapitalInstallation(i.name, 
+                                                      i.time, 
+                                                      i.timePerTurbine, 
+                                                      i.costPerDay, 
+                                                      i.numberOfTurbines, 
+                                                      i.scalePerTurbine)
+                                                      for i in Capital_Installations ]
+
+    LCOE_gen4wave.append(LevelizedCostofElectricity(HM, number_of_turbines, lifetime, 1150.6, 18.11, 472.55,  2.197,  236.4,
+                           emergency_events, installations, ops))
+
+print('2. Gen4Wave V7 - {}'.format(LCOE_gen4wave))
+
+
+# In[7]:
+
+plt.plot(times/(24*3600), results/1000)
+
+plt.ylabel('Energy (MJ)')
+plt.xlabel('Time (day)')
+plt.savefig('PowerOutput.png', format='png', transparent=True, bbox_inches='tight')
+
+print(results)
 
 
 # ### Testing for Maintenance costs
@@ -431,10 +547,14 @@ plt.savefig('PowerOutput.png', format='png', transparent=True, bbox_inches='tigh
 
 # ### Build power curve model
 
-# In[10]:
+# In[24]:
 
-def richardsCurve(Velocity,B,M,g):
-    return 1200*(1+.1835*np.exp(-1*B*(Velocity-M)))**(-1/g)
+
+import plotly.plotly as py
+import plotly.graph_objs as go
+
+def richardsCurve(Velocity,K,Q,B,M,g):
+    return K*(1+Q*np.exp(-1*B*(Velocity-M)))**(-1/g)
 
 import scipy.optimize
 import numpy as np
@@ -442,14 +562,14 @@ import numpy as np
 velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4])
 power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200])
 
-starting_guess = (1, 1, 1)
+# starting_guess = (1, 1, 1)
 
-optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
-                                                                 xdata = velocities, 
-                                                                 ydata = power, 
-                                                                 p0 = starting_guess)
+# optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
+#                                                                  xdata = velocities, 
+#                                                                  ydata = power, 
+#                                                                  p0 = starting_guess)
 x = np.linspace(0,4)
-y = richardsCurve(x, *optimized_parameters)
+y = richardsCurve(x, 1150.6, 18.11, 472.55,  2.197,  236.4)
 
 get_ipython().magic('matplotlib inline')
 from matplotlib import pyplot as plt
