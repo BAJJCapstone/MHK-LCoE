@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 import scipy.optimize
 import numpy as np
@@ -39,7 +39,7 @@ plt.plot(np.arange(0, len(currents['COD0903.7.d'])),np.cos(currents['COD0903.7.d
 plt.show()
 
 
-# In[21]:
+# In[2]:
 
 Bournedale = TidalStation(8447191)
 time, height = Bournedale.predictWaterLevels(0, 24*30)
@@ -47,14 +47,17 @@ time, height = Bournedale.predictWaterLevels(0, 24*30)
 
 height_constituents = Bournedale.constituents
 
+# for key, item in height_constituents.items():
+#     print('{} & {} & {} \\ '.format(key, item['Phase'], item['Description']))
+
 
 # In[23]:
 
-def harmonicConstituentModel(time, *hm):
+def harmonicConstituentModel(time, *hm, **speeds):
     assert len(hm) % 3 == 0
     velocity = 0 
-    for i in range(len(hm)//3):
-        velocity += hm[3*i]*np.cos((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
+    for constituent, speed in speeds.items():
+        velocity += hm[2*i]*np.cos((speed * time + hm[2*i+1])*np.pi/180.)
     return velocity
 
 
@@ -97,6 +100,13 @@ with open('HM-COD0903-7.txt','w') as myFile:
     for i in range(len(optimized_parameters)//3):
         myFile.write('{},{},{}\n'.format(optimized_parameters[3*i],optimized_parameters[3*i+1], optimized_parameters[3*i+2]))
     
+
+
+# In[6]:
+
+dictionary = {'a':1, 'b':2, 'c':3, 'd':4}
+for key, item in dictionary.items():
+    print(key, item)
 
 
 # In[25]:

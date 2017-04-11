@@ -15,18 +15,18 @@ sbn.set_context("paper", font_scale=1)
 sbn.set_style("whitegrid")
 
 
-# In[2]:
+# In[12]:
 
-velocities = np.array([0,.5,1,1.5,2,2.5,3,3.5,4,10])
-power = np.array([0,20,75,300,800, 1100, 1175, 1195, 1200,1200])
+velocities = np.array([0, .5, 1, 1.3, 1.7, 2.2, 2.5, 3, 5, 10])
+power = np.array([0, 0, 200, 400, 700, 1000, 1150, 1150, 1150, 1150])
 
 
-# In[5]:
+# In[13]:
 
 def richardsCurve(Velocity, K, Q, B,M,g):
     return K*(1+Q*np.exp(-1*B*(Velocity-M)))**(-1/g)
 
-starting_guess = (1000, 1, 1, 1, 1)
+starting_guess = (1000, 10, 1, 1, 1)
 
 optimized_parameters, covariance = scipy.optimize.curve_fit(richardsCurve, 
                                                                  xdata = velocities, 
@@ -40,16 +40,16 @@ get_ipython().magic('matplotlib inline')
 from matplotlib import pyplot as plt
 
 plt.plot(x,y,label='optimized')
-plt.plot(x1, y1, label='starting')
+plt.plot(velocities, power, 'o', label='experiment')
 plt.ylabel('Power (kW)')
 plt.xlabel('Flow Speed (m/s)')
 plt.legend(loc='best')
 plt.savefig('RichardsCurve.png', format='png', transparent=True, bbox_inches='tight')
 
 
-# In[6]:
+# In[17]:
 
-print(optimized_parameters)
+print('[ {0:.3f} , {1:.3f} , {2:.3f} , {3:.3f} , {4:.3f}]'.format(*optimized_parameters))
 
 
 # In[ ]:

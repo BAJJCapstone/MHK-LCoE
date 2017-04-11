@@ -75,6 +75,7 @@ class TidalStation(Station):
             zippedData = list(zip(table_headers, rowData))
             name = rowData[1]
             harmonicConstituentDict[name] = {header: value for header, value in zippedData[2:]}
+            # print('{0} & {1:.1f} & {2} \\\\ ' .format(name, 360./float(harmonicConstituentDict[name]['Speed']), harmonicConstituentDict[name]['Description'].split('constituent')[0]))
 
         return harmonicConstituentDict
 

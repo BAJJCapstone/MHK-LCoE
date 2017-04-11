@@ -47,34 +47,14 @@ def distance(point_one, point_two):
     point_one: tuple containing (lat, lon)
     point_two: tuple containing (lat, lon)
     '''
-
     R = 6.371e6
-
     phi_one = point_one[0] * np.pi/180.
     phi_two = point_two[0] * np.pi/180.
-
     delta_phi = phi_two - phi_one
     delta_lamb = (point_two[1] - point_one[1])*np.pi/180
-
     a = np.sin(delta_phi/2.) * np.sin(delta_phi/2) + np.cos(phi_one) * np.cos(phi_two) * np.sin(delta_lamb/2) * np.sin(delta_lamb/2)
     c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-
     return R*c
-
-
-def sea_distance(lat,shore_lat,long,shore_long):
-    sq1 = (lat - shore_lat)**2
-    sq2 = (long - shore_long)**2
-    #this calculates the distance between the turbine and the shore
-    #need this distance to determine how long submarine cable will be
-    return math.sqrt(sq1+sq2)
-
-def land_distance (grid_lat,shore_lat,grid_long,shore_long):
-    sq3 = (shore_lat - grid_lat)**2
-    sq4 = (shore_long - grid_long)**2
-    #this calculates the distance between the onshore point & load center (grid)
-    #this cable does not need to be made for submarine conditions
-    return math.sqrt(sq3+sq4)
 
 def sea_cable_cost(sea_distance, multiplier, multiplier_2):
     if sea_distance <= 50:
@@ -83,7 +63,7 @@ def sea_cable_cost(sea_distance, multiplier, multiplier_2):
         cc1 = sea_distance * multiplier_2    #range is (1.5 to 1.9M) #HVDC
     return cc1
 
-def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None):
+def land_cable_cost(land_distance, cable_type, voltage, terrain, circuit = None):
     '''
     cable_type : overhead, underground
     circuit : single, double
@@ -123,6 +103,7 @@ def land_cable_cost (land_distance, cable_type, voltage, terrain, circuit = None
             cc2 *= 2.25
         elif terrain.strip().upper() == "HILL":
             cc2 *= 1.4
+
     else:
         raise TypeError('Cable Type not valid')
     return cc2
