@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[16]:
 
 import scipy.optimize
 import numpy as np
@@ -15,19 +15,16 @@ from IPython.core.pylabtools import figsize
 figsize(12, 10)
 sbn.set_context("paper", font_scale=1)
 sbn.set_style("whitegrid")
+from contextlib import redirect_stdout
 
+from collections import namedtuple
 
 from NOAAStations import TidalStation
 from DeviceModels import Turbine, calculate_power
-from Calculator import maintenance, operation
+from Calculator import maintenance, operation, installation
 
 
-# In[ ]:
-
-
-
-
-# In[ ]:
+# In[6]:
 
 def harmonicConstituentModel(time, *hm):
     assert len(hm) % 3 == 0
@@ -121,17 +118,17 @@ def LevelizedCostofElectricity(HM,
     # Process the final costs and return the levelized cost
     total_cost = np.mean(maintenance_costs) + installation_cost + ops_cost + planned_maintenance
     total_power = (power_array[-1]*number_of_turbines - np.mean(power_losses))/3600 #to kWhr!!
-    with open('filename', 'w') as f:
-
-    print('Ideal power output = {} MWhr '.format(power_array[-1]/(1000*3600)))
-    print('Estimated total power loss - {} MJ, sigma = {}'.format(np.mean(power_losses)/1000, np.std(power_losses)/1000))
-    print('Estimated total maintenance cost - $ {}, sigma = $ {}'.format(np.mean(maintenance_costs), np.std(maintenance_costs)))
-    print('Estimated installation cost - $ {}'.format(installation_cost))
-    print('Estimated operations cost - $ {}'.format(ops_cost))
+    with open(filename, 'w') as f:
+        with redirect_stdout(f):
+            print('Ideal power output = {} MWhr '.format(power_array[-1]/(1000*3600)))
+            print('Estimated total power loss - {} MJ, sigma = {}'.format(np.mean(power_losses)/1000, np.std(power_losses)/1000))
+            print('Estimated total maintenance cost - $ {}, sigma = $ {}'.format(np.mean(maintenance_costs), np.std(maintenance_costs)))
+            print('Estimated installation cost - $ {}'.format(installation_cost))
+            print('Estimated operations cost - $ {}'.format(ops_cost))
     return total_cost/total_power, power_array
 
 
-# In[ ]:
+# In[12]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 CapitalInstallation = namedtuple('Parameter', 'name costPerDay timePerTurbine time numberOfTurbines scalePerTurbine')
@@ -172,28 +169,6 @@ ops = [
 ]
 
 
-# In[13]:
-
-max_average = 0 
-for pkl_file in os.listdir(os.path.join('currentData')):
-    if not pkl_file.startswith('COD'): continue
-    station_id = pkl_file.split('.')[0]
-    currents = pd.read_pickle(os.path.join('currentData', pkl_file))
-    currents.dropna()
-    for column in currents:
-        try:
-            if column.endswith('.s'): 
-                average = pd.to_numeric(currents[column]).mean()
-            else: 
-                continue
-        except TypeError:
-            failures += 1
-            print('uh oh')
-            continue
-        if float(average) > float(max_average):
-            max_average = average
-            location = column
-
 
     Capital_Installations = [
     CapitalInstallation('Pile Installation, Mobilize Vessel', 111000., 'n/a', 4, number_of_turbines, False),
@@ -230,8 +205,32 @@ for pkl_file in os.listdir(os.path.join('currentData')):
                                                       i.numberOfTurbines, 
                                                       i.scalePerTurbine)
                                                       for i in Capital_Installations ]
+
+
+# In[ ]:
+
+for pkl_file in os.listdir(os.path.join('currentData')):
+    max_average = 0 
+    if not pkl_file.startswith('COD'): continue
+    station_id = pkl_file.split('.')[0]
+    print('Working on {}'.format(station_id))
+    currents = pd.read_pickle(os.path.join('currentData', pkl_file))
+    currents.dropna()
+    for column in currents:
+        try:
+            if column.endswith('.s'): 
+                average = pd.to_numeric(currents[column]).mean()
+            else: 
+                continue
+        except TypeError:
+            failures += 1
+            print('uh oh')
+            continue
+        if float(average) > float(max_average):
+            max_average = average
+            location = column
+
     
-    station_id = location.split('.')[0]
     station_data = os.path.join('currentData', '{}.pkl'.format(station_id))
 
     currents = pd.read_pickle(station_data)
@@ -243,52 +242,54 @@ for pkl_file in os.listdir(os.path.join('currentData')):
     speedAndDirection = pd.DataFrame(currents['{}.{}.s'.format(station_id, bin_number)].values/100.*np.cos(currents['{}.{}.d'.format(station_id, bin_number)].values*np.pi/180.), 
                                      index=currents.index)
 
-    
-    Bournedale = TidalStation(8447191)
-    height_constituents = Bournedale.constituents
+    if not os.path.isfile('HM-{}-{}.txt'.format(station_id, bin_number)):
+        Bournedale = TidalStation(8447191)
+        height_constituents = Bournedale.constituents
 
-    def set_up_least_squares(constituents, **height_constituents):
-        hm = {key: float(dicts['Speed']) for key, dicts in height_constituents.items()}
-        def harmonicConstituentModel(time, *amp_and_phase):
-            assert len(amp_and_phase) // 2 == len(height_constituents.keys())
-            assert len(amp_and_phase) % 2 == 0
-            velocity = 0 
-            for i, constituent in enumerate(constituents):
-                velocity += amp_and_phase[2*i]*np.cos((hm[constituent] * time + amp_and_phase[2*i+1])*np.pi/180.)
-            return velocity    
-        return harmonicConstituentModel
+        def set_up_least_squares(constituents, **height_constituents):
+            hm = {key: float(dicts['Speed']) for key, dicts in height_constituents.items()}
+            def harmonicConstituentModel(time, *amp_and_phase):
+                assert len(amp_and_phase) // 2 == len(height_constituents.keys())
+                assert len(amp_and_phase) % 2 == 0
+                velocity = 0 
+                for i, constituent in enumerate(constituents):
+                    velocity += amp_and_phase[2*i]*np.cos((hm[constituent] * time + amp_and_phase[2*i+1])*np.pi/180.)
+                return velocity    
+            return harmonicConstituentModel
 
-    velocities = speedAndDirection.as_matrix()
-    time = np.arange(0, len(velocities))*6/60
-    data = np.column_stack((time, velocities[:,0]))
-    data = data[~np.isnan(data).any(axis=1)]
-    upper_bounds = []
-    starting_guess = []
-    constituents = []
-    for keys, dicts in height_constituents.items():
-        starting_guess.append(float(dicts['Amplitude']))
-        upper_bounds.append(np.inf)
-        if float(dicts['Phase'])+180 < 360: starting_guess.append(float(dicts['Phase']) + 180)
-        else: starting_guess.append(float(dicts['Phase']) - 180)
-        upper_bounds.append(360)
-        constituents.append(keys)
+        velocities = speedAndDirection.as_matrix()
+        time = np.arange(0, len(velocities))*6/60
+        data = np.column_stack((time, velocities[:,0]))
+        data = data[~np.isnan(data).any(axis=1)]
+        upper_bounds = []
+        starting_guess = []
+        constituents = []
+        for keys, dicts in height_constituents.items():
+            starting_guess.append(float(dicts['Amplitude']))
+            upper_bounds.append(np.inf)
+            if float(dicts['Phase'])+180 < 360: starting_guess.append(float(dicts['Phase']) + 180)
+            else: starting_guess.append(float(dicts['Phase']) - 180)
+            upper_bounds.append(360)
+            constituents.append(keys)
 
-    lower_bounds = [0]*len(upper_bounds)    
-    param_bounds = (lower_bounds, upper_bounds)
-    starting_guess = tuple(starting_guess)
+        lower_bounds = [0]*len(upper_bounds)    
+        param_bounds = (lower_bounds, upper_bounds)
+        starting_guess = tuple(starting_guess)
 
-    optimized_parameters, covariance = scipy.optimize.curve_fit(set_up_least_squares(constituents, **height_constituents), 
-                                                             xdata = data[:,0], 
-                                                             ydata = data[:,1],
-                                                             bounds = param_bounds,
-                                                             p0 = starting_guess)
-    
+        optimized_parameters, covariance = scipy.optimize.curve_fit(set_up_least_squares(constituents, **height_constituents), 
+                                                                 xdata = data[:,0], 
+                                                                 ydata = data[:,1],
+                                                                 bounds = param_bounds,
+                                                                 p0 = starting_guess)
+    else:
+        print('Found HM-{}-{}.txt'.format(station_id, bin_number))
+        
     with open('HM-{}-{}.txt'.format(station_id, bin_number),'w') as myFile:
         for i, constituent in enumerate(constituents):
             myFile.write('{},{},{}\n'.format(optimized_parameters[2*i],height_constituents[constituent]['Speed'], optimized_parameters[2*i+1]))
 
     HM = []
-    with open('HM-{}-{}.txt'.format(station_id, 38),'r') as myFile:
+    with open('HM-{}-{}.txt'.format(station_id, bin_number),'r') as myFile:
         for i, line in enumerate(myFile):
             amplitude, speed, phase  = line.split(',')
             HM.append(float(amplitude))
@@ -296,72 +297,12 @@ for pkl_file in os.listdir(os.path.join('currentData')):
             HM.append(float(phase))           
     HM_tuple = tuple(HM)        
     result, power_array = LevelizedCostofElectricity(HM_tuple, number_of_turbines, lifetime, 1200., 0.1835, 3.55361367,  2.30706792,  1.05659521,
-                           emergency_events, installations, ops)
+                           emergency_events, installations, ops, filename = 'LCOE-{}-{}.log'.format(station_id, bin_number))
 
+    LCOE.append(result)
     print('LCOE for {} turbine(s) was {}'.format(station_id, LCOE[-1]))
     print('-'*80)            
     
-
-
-# In[14]:
-
-
-
-
-# In[15]:
-
-
-
-
-# In[16]:
-
-
-
-        
-print(optimized_parameters)
-
-
-# In[17]:
-
-
-
-
-# In[20]:
-
-def harmonicConstituentModel(time, *hm):
-    assert len(hm) % 3 == 0
-    velocity = 0 
-    for i in range(len(hm)//3):
-        velocity += hm[3*i]*np.cos((hm[3*i+1] * time + hm[3*i+2])*np.pi/180.)
-    return velocity
-
-
-plt.figure()
-speedAndDirection.plot()
-plt.show()
-
-velocities = speedAndDirection.as_matrix()
-
-time = np.arange(0, len(velocities))*6/60
-data = np.column_stack((time, velocities[:,0]))
-data = data[~np.isnan(data).any(axis=1)]
-
-t = np.arange(0, 50, .1)
-optimized_parameters = []
-with open('HM-{}-{}.txt'.format(station_id, 38),'r') as myFile:
-    for i, line in enumerate(myFile):
-        amplitude, speed, phase  = line.split(',')
-        optimized_parameters.append(float(amplitude))
-        optimized_parameters.append(float(speed))
-        optimized_parameters.append(float(phase))
-
-graph2 = harmonicConstituentModel(t, *optimized_parameters)
-plt.plot(data[:500,0], data[:500,1], label='Measured Currents')
-plt.plot(t, graph2, label='Least Squares Fit')
-plt.legend(loc='best')
-plt.xlabel('Time (hours)')
-plt.ylabel('Velocity (m/s)')
-plt.show()
 
 
 # In[ ]:

@@ -1,6 +1,8 @@
 *.json
 *.pkl
 *.html
+*.txt
+*.png
 *.log
 *.pyc
 .idea/
