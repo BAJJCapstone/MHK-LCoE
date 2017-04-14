@@ -68,10 +68,10 @@ def lifetimeMonteCarlo(lifetime, emergency_list, discount_rate = .05, graph = Fa
         time = 0
         emergency_maintenance_cost = 0
         while 1:
-            maintenance_type, wait_time = MonteCarlo(emergency_list)
-            current_time = time[-1] + wait_time + maintenance_type.downtime
+            maintenance_type, wait_time = monteCarlo(emergency_list)
+            current_time = time + wait_time + maintenance_type.downtime.total_seconds()/(24*3600*365.25)
             if current_time > lifetime: break
-            time += wait_time + maintenance_type.downtime
+            time += wait_time + maintenance_type.downtime.total_seconds()/(24*3600*365.25)
             emergency_maintenance_cost += maintenance_type.event_cost
 
     return time, emergency_maintenance_cost
