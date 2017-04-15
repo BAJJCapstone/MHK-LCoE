@@ -349,7 +349,10 @@ for number_of_turbines in [1,2,5,10,50,100]:
 print('3. RM4, Moored Glider, 4 axial-flow - {}'.format(LCOE_RM4))
 
 
-# In[8]:
+# In[10]:
+
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 import plotly.plotly as py
 import plotly.graph_objs as go
@@ -357,18 +360,22 @@ import plotly.graph_objs as go
 trace = [go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE,
-    marker = dict(color = '11C3F4')),
+    marker = dict(color = '11C3F4'),
+    name = 'SeaGen'),
+         
     go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE_gen4wave,
-    marker = dict(color = 'FFB450')),
+    marker = dict(color = 'FFB450'),
+    name = 'Gen4wave V7'),
     go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE_RM4,
-    marker = dict(color = '00CCCC'))]
+    marker = dict(color = '00CCCC'),
+    name = 'Ocean Current Turbine')]
 
 layout = go.Layout(
-    xaxis = dict(title = 'Number of SeaGen Turbines',
+    xaxis = dict(title = 'Number of Turbines',
         titlefont = dict(
         size = 20,
         color = 'white'),
@@ -384,19 +391,10 @@ layout = go.Layout(
             size=16,
             color='white'
         )),
-        annotations=[
-        dict(x=xi,y=yi,
-             text='${0:.2f}'.format(yi[0]),
-             font = dict(
-                 size = 16,
-                 color='white'),
-             xanchor='center',
-             yanchor='bottom',
-             showarrow=False,
-        ) for xi, yi in zip(['One','Two','Five','Ten','Fifty','One Hundred'], LCOE_gen4wave)],
     paper_bgcolor='transparent',
-    plot_bgcolor='transparent')
-
+    plot_bgcolor='transparent',
+    legend = dict(orientation="h",
+                  font = dict(color = 'white')))
 fig = go.Figure(data = trace, layout=layout)
 py.iplot(fig, filename='Bournedale2')
 

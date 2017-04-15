@@ -27,7 +27,7 @@ sbn.set_style("whitegrid")
 from collections import namedtuple
 
 
-# In[16]:
+# In[19]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 
@@ -60,16 +60,21 @@ runs = 200
 costs = np.zeros(runs)
 tracking_average = np.zeros(runs)
 tracking_error = np.zeros(runs)
+upper_quartile = np.zeros(runs)
+lower_quartile = np.zeros(runs)
+
 
 for i in range(runs):
     time, cost = maintenance.lifetimeMonteCarlo(20, emergency_events)
     costs[i] = cost/1e6
     tracking_average[i] = np.mean(costs[:i+1])
+    upper_quartile[i] = np.percentile(costs[:i+1],75)
+    lower_quartile[i] = np.percentile(costs[:i+1],25)
     tracking_error[i] = np.std(costs[:i+1])    
 
-plt.plot(tracking_average, '-')
-plt.plot(tracking_average+tracking_error, '--')
-plt.plot(tracking_average-tracking_error, '--')
+plt.plot(tracking_average, '-k')
+plt.plot(upper_quartile, ':k')
+plt.plot(lower_quartile, ':k')
 plt.xlabel('Number of Simulations')
 plt.ylabel('Maintenance in $MM over 20 years')
 plt.ylim(0,)
@@ -78,16 +83,69 @@ plt.savefig('montecaro.png')
     
 
 
-# In[ ]:
-
-
-
-
-# In[ ]:
+# In[25]:
 
 
 import plotly.plotly as py
 import plotly.graph_objs as go
+
+
+x = np.arange(0,200)
+
+trace = [go.Scatter(
+    x = x,
+    y = tracking_average,
+    mode = 'lines',
+    name = 'Average',
+    line = dict(color = 'rgb(52, 165, 218)')
+    ),
+        go.Scatter(
+    x = x,
+    y = upper_quartile,
+    name = 'Upper Quartile',
+    mode = 'markers',
+    line = dict(color = 'rgb(52, 165, 218)')
+        ),
+        go.Scatter(
+    x = x,
+    y = lower_quartile,
+    name = 'Lower Quartile',
+    mode = 'markers',
+    line = dict(color = 'rgb(52, 165, 218)')
+        )
+        ]
+
+
+layout = go.Layout(
+    xaxis = dict(title = 'Number of Simulations',
+        range = [0,200],        
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    yaxis = dict(title = 'Maintenance in $MM over 20 years',
+        range = [0,2.2],
+        titlefont = dict(
+        size = 20,
+        color = 'white'),
+        tickfont=dict(
+            size=16,
+            color='white'
+        )),
+    paper_bgcolor='transparent',
+    plot_bgcolor='transparent',
+    legend = dict(font = dict(color = 'white')))
+
+fig = go.Figure(data = trace, layout=layout)
+py.iplot(fig, filename='montecarlo')
+
+
+# In[ ]:
+
+
 
 def richardsCurve(Velocity,K,Q,B,M,g):
     return K*(1+Q*np.exp(-1*B*(Velocity-M)))**(-1/g)

@@ -130,7 +130,7 @@ def LevelizedCostofElectricity(HM,
     return total_cost/total_power, power_array
 
 
-# In[6]:
+# In[23]:
 
 Maintenance_Rate = namedtuple('Parameter', 'partname minimal_rate midlevel_rate severe_rate minimal_cost midlevel_cost severe_cost number labor')
 CapitalInstallation = namedtuple('Parameter', 'name costPerDay timePerTurbine time numberOfTurbines scalePerTurbine')
@@ -311,7 +311,7 @@ for number_of_turbines in [1,2,5,10,50,100]:
 print('2. Gen4Wave V7 - {}'.format(LCOE_gen4wave))
 
 
-# In[11]:
+# In[24]:
 
 lifetime = 20.
 LCOE_RM4 = []
@@ -346,7 +346,12 @@ for number_of_turbines in [1,2,5,10,50,100]:
 print('3. RM4, Moored Glider, 4 axial-flow - {}'.format(LCOE_RM4))
 
 
-# In[10]:
+# In[22]:
+
+print(ops[-1].position)
+
+
+# In[34]:
 
 import plotly.plotly as py
 import plotly.graph_objs as go
@@ -354,18 +359,39 @@ import plotly.graph_objs as go
 trace = [go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE,
-    marker = dict(color = '11C3F4')),
+    marker = dict(color = '#11C3F4'),
+    name = 'SeaGen'),
     go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE_gen4wave,
-    marker = dict(color = 'FFB450')),
+    marker = dict(color = '#6666FF'),
+    name = 'Gen4wave V7'),
     go.Bar(
     x = ['One','Two','Five','Ten','Fifty','One Hundred'],
     y = LCOE_RM4,
-    marker = dict(color = '00CCCC'))]
+    marker = dict(color = '#00CCCC'),
+    name = 'Ocean Current Turbine'),
+    go.Scatter(
+    x = ['One','Two','Five','Ten','Fifty','One Hundred'],
+    y = [.0585,.0585,.0585,.0585,.0585,.0585],
+    mode = 'lines',
+    name = 'Wind',
+    line = dict(color = '#FFB450')),
+    go.Scatter(
+    x = ['One','Two','Five','Ten','Fifty','One Hundred'],
+    y = [.0742,0.0742,0.0742,0.0742,0.0742,0.0742],
+    mode = 'lines',
+    name = 'Solar',
+    line = dict(color = '#FFFF27')),
+    go.Scatter(
+    x = ['One','Two','Five','Ten','Fifty','One Hundred'],
+    y = [.0997,0.0997,0.0997,0.0997,0.0997,0.0997],
+    mode = 'lines',
+    name = 'Nuclear',
+    line = dict(color = '#9EFF09'))]
 
 layout = go.Layout(
-    xaxis = dict(title = 'Number of SeaGen Turbines',
+    xaxis = dict(title = 'Number of Turbines',
         titlefont = dict(
         size = 20,
         color = 'white'),
@@ -381,19 +407,16 @@ layout = go.Layout(
             size=16,
             color='white'
         )),
-        annotations=[
-        dict(x=xi,y=yi,
-             text='${0:.2f}'.format(yi[0]),
-             font = dict(
-                 size = 16,
-                 color='white'),
-             xanchor='center',
-             yanchor='bottom',
-             showarrow=False,
-        ) for xi, yi in zip(['One','Two','Five','Ten','Fifty','One Hundred'], LCOE_gen4wave)],
     paper_bgcolor='transparent',
-    plot_bgcolor='transparent')
+    plot_bgcolor='transparent',
+    legend = dict(orientation="h",
+        font = dict(color = 'white')))
 
 fig = go.Figure(data = trace, layout=layout)
 py.iplot(fig, filename='KnikArm')
+
+
+# In[ ]:
+
+
 
